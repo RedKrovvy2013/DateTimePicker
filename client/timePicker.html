@@ -1,0 +1,15 @@
+
+<div>
+
+    <hour-setter hour="hour" am-pm-obj="amPmObj">
+    </hour-setter>
+
+    <input type="text" ng-model="minute" minute-formatter />
+
+    <select ng-model="selected" ng-options="option.name for option in selectOptions" />
+
+    <button ng-click="check()">
+        Check Time
+    </button>
+
+</div>

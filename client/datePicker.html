@@ -1,0 +1,29 @@
+
+<div>
+
+    <div>
+        <button ng-click="prevMonth()">
+            <
+        </button>
+        <h2 style="display: inline;">
+            {{month}} {{year}}
+        </h2>
+        <button ng-click="nextMonth()">
+            >
+        </button>
+    </div>
+
+    <div>
+        <p ng-repeat="day in monthDays"
+           ng-click="updateMonthDays(day)"
+           ng-class="{'active': day===activeMonthDay}"
+           style="display: inline-block; padding: 0 2px;">
+            {{day+1}}
+        </p>
+    </div>
+
+    <button ng-click="check()">
+        Check Date
+    </button>
+
+</div>

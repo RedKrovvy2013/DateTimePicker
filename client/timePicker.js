@@ -1,5 +1,4 @@
 var angular = require('angular')
-var moment = require('moment')
 
 require('./minuteFormatter')
 require('./hourSetter')
@@ -8,13 +7,8 @@ angular.module('app').directive('timePicker', function() {
     return {
         restrict: 'E',
         template: require('./timePicker.html'),
-        // scope: {
-        //     datetime: '='
-        // },
         link: {
             pre: function($scope, elem, attrs, ctrl) {
-
-                $scope.datetime = moment()
 
                 $scope.hour = $scope.datetime.hour()
                 $scope.minute = $scope.datetime.minute()
@@ -44,12 +38,6 @@ angular.module('app').directive('timePicker', function() {
                             $scope.hour = $scope.hour+12
                     }
                 })
-
-                $scope.check = function() {
-                    console.log($scope.datetime)
-                    console.log($scope.hour)
-                    console.log($scope.minute)
-                }
             },
             post: function() {}
         }

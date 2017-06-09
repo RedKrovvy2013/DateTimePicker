@@ -15632,8 +15632,7 @@ var angular = __webpack_require__(1)
 
 var app = angular.module('app', [])
 
-__webpack_require__(118)
-__webpack_require__(119)
+__webpack_require__(203)
 
 
 /***/ }),
@@ -15641,18 +15640,12 @@ __webpack_require__(119)
 /***/ (function(module, exports, __webpack_require__) {
 
 var angular = __webpack_require__(1)
-var moment = __webpack_require__(0)
 
 angular.module('app').directive('datePicker', function() {
     return {
         restrict: 'E',
         template: __webpack_require__(123),
-        // scope: {
-        //     datetime: '='
-        // },
         link: function($scope, elem, attrs, ctrl) {
-
-            $scope.datetime = moment()
 
             $scope.updateScope = function() {
                 $scope.year = $scope.datetime.format('YYYY')
@@ -15672,9 +15665,7 @@ angular.module('app').directive('datePicker', function() {
 
             $scope.updateMonthDays = function(day) {
 
-                if(arguments.length > 0)
-                    $scope.datetime.date(day+1)
-                    //day is 0-based while date() is not
+                $scope.datetime.date(day+1)
 
                 var daysInMonth = $scope.datetime.daysInMonth()
                 $scope.monthDays = []
@@ -15687,9 +15678,6 @@ angular.module('app').directive('datePicker', function() {
 
             $scope.updateScope()
 
-            $scope.check = function() {
-                console.log($scope.datetime)
-            }
         }
     }
 })
@@ -15700,7 +15688,6 @@ angular.module('app').directive('datePicker', function() {
 /***/ (function(module, exports, __webpack_require__) {
 
 var angular = __webpack_require__(1)
-var moment = __webpack_require__(0)
 
 __webpack_require__(202)
 __webpack_require__(201)
@@ -15709,13 +15696,8 @@ angular.module('app').directive('timePicker', function() {
     return {
         restrict: 'E',
         template: __webpack_require__(124),
-        // scope: {
-        //     datetime: '='
-        // },
         link: {
             pre: function($scope, elem, attrs, ctrl) {
-
-                $scope.datetime = moment()
 
                 $scope.hour = $scope.datetime.hour()
                 $scope.minute = $scope.datetime.minute()
@@ -15745,12 +15727,6 @@ angular.module('app').directive('timePicker', function() {
                             $scope.hour = $scope.hour+12
                     }
                 })
-
-                $scope.check = function() {
-                    console.log($scope.datetime)
-                    console.log($scope.hour)
-                    console.log($scope.minute)
-                }
             },
             post: function() {}
         }
@@ -58048,13 +58024,13 @@ webpackContext.id = 122;
 /* 123 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div>\r\n\r\n    <div>\r\n        <button ng-click=\"prevMonth()\">\r\n            <\r\n        </button>\r\n        <h2 style=\"display: inline;\">\r\n            {{month}} {{year}}\r\n        </h2>\r\n        <button ng-click=\"nextMonth()\">\r\n            >\r\n        </button>\r\n    </div>\r\n\r\n    <div>\r\n        <p ng-repeat=\"day in monthDays\"\r\n           ng-click=\"updateMonthDays(day)\"\r\n           ng-class=\"{'active': day===activeMonthDay}\"\r\n           style=\"display: inline-block; padding: 0 2px;\">\r\n            {{day+1}}\r\n        </p>\r\n    </div>\r\n\r\n    <button ng-click=\"check()\">\r\n        Check Date\r\n    </button>\r\n\r\n</div>\r\n"
+module.exports = "\r\n<div>\r\n\r\n    <div>\r\n        <button ng-click=\"prevMonth()\">\r\n            <\r\n        </button>\r\n        <h2 style=\"display: inline;\">\r\n            {{month}} {{year}}\r\n        </h2>\r\n        <button ng-click=\"nextMonth()\">\r\n            >\r\n        </button>\r\n    </div>\r\n\r\n    <div>\r\n        <p ng-repeat=\"day in monthDays\"\r\n           ng-click=\"updateMonthDays(day)\"\r\n           ng-class=\"{'active': day===activeMonthDay}\"\r\n           style=\"display: inline-block; padding: 0 2px;\">\r\n            {{day+1}}\r\n        </p>\r\n    </div>\r\n\r\n</div>\r\n"
 
 /***/ }),
 /* 124 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div>\r\n\r\n    <hour-setter hour=\"hour\" am-pm-obj=\"amPmObj\">\r\n    </hour-setter>\r\n\r\n    <input type=\"text\" ng-model=\"minute\" minute-formatter />\r\n\r\n    <select ng-model=\"selected\" ng-options=\"option.name for option in selectOptions\" />\r\n\r\n    <button ng-click=\"check()\">\r\n        Check Time\r\n    </button>\r\n\r\n</div>\r\n"
+module.exports = "\r\n<div>\r\n\r\n    <hour-setter hour=\"hour\" am-pm-obj=\"amPmObj\">\r\n    </hour-setter>\r\n\r\n    <input type=\"text\" ng-model=\"minute\" minute-formatter />\r\n\r\n    <select ng-model=\"selected\" ng-options=\"option.name for option in selectOptions\" />\r\n\r\n</div>\r\n"
 
 /***/ }),
 /* 125 */
@@ -59925,6 +59901,44 @@ angular.module('app').directive('minuteFormatter', function() {
     }
 })
 
+
+/***/ }),
+/* 203 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var angular = __webpack_require__(1)
+var moment = __webpack_require__(0)
+
+__webpack_require__(118)
+__webpack_require__(119)
+
+angular.module('app').directive('dateTimePicker', function() {
+    return {
+        restrict: 'E',
+        transclude: true,
+        template: __webpack_require__(204),
+        scope: { },
+        link: {
+            pre: function($scope, elem, attrs, ctrl) {
+
+                $scope.datetime = moment()
+
+                $scope.check = function() {
+                    console.log($scope.datetime)
+                }
+
+            },
+            post: function() {}
+        }
+    }
+})
+
+
+/***/ }),
+/* 204 */
+/***/ (function(module, exports) {
+
+module.exports = "\r\n<div>\r\n    <date-picker>\r\n    </date-picker>\r\n    <time-picker>\r\n    </time-picker>\r\n    <div>\r\n        <button ng-click=\"check()\">\r\n            Check\r\n        </button>\r\n    </div>\r\n</div>\r\n"
 
 /***/ })
 /******/ ]);

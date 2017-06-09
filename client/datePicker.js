@@ -1,16 +1,10 @@
 var angular = require('angular')
-var moment = require('moment')
 
 angular.module('app').directive('datePicker', function() {
     return {
         restrict: 'E',
         template: require('./datePicker.html'),
-        // scope: {
-        //     datetime: '='
-        // },
         link: function($scope, elem, attrs, ctrl) {
-
-            $scope.datetime = moment()
 
             $scope.updateScope = function() {
                 $scope.year = $scope.datetime.format('YYYY')
@@ -30,9 +24,7 @@ angular.module('app').directive('datePicker', function() {
 
             $scope.updateMonthDays = function(day) {
 
-                if(arguments.length > 0)
-                    $scope.datetime.date(day+1)
-                    //day is 0-based while date() is not
+                $scope.datetime.date(day+1)
 
                 var daysInMonth = $scope.datetime.daysInMonth()
                 $scope.monthDays = []
@@ -45,9 +37,6 @@ angular.module('app').directive('datePicker', function() {
 
             $scope.updateScope()
 
-            $scope.check = function() {
-                console.log($scope.datetime)
-            }
         }
     }
 })

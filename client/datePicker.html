@@ -13,13 +13,15 @@
         </button>
     </div>
 
-    <div>
-        <p ng-repeat="day in monthDays"
-           ng-click="updateMonthDays(day)"
-           ng-class="{'active': day===activeMonthDay}"
-           style="display: inline-block; padding: 0 2px;">
-            {{day+1}}
-        </p>
-    </div>
+    <table>
+        <tr ng-repeat="week in weeks">
+            <td ng-repeat="day in week">
+                <p ng-click="selectDate(day.date)"
+                   ng-class="{ 'selectable': day.selectable,
+                               'in-past': day.inPast,
+                               'not-this-month': day.notThisMonth,
+                               'active': day.active }">{{day.dayOfMonth}}<p>
+            </td>
+        </tr>
 
 </div>

@@ -1,4 +1,26 @@
 
+p {
+    margin: 5px;
+    font-weight: bold;
+}
+
+p.in-past, p.in-past.not-this-month {
+    color: #e0e0e0;
+}
+
+p.selectable:hover {
+    background-color: #eeba97;
+}
+
+p.selectable.not-this-month:hover,
+p.selectable.active:hover {
+    background: none;
+}
+
+p.not-this-month {
+    color: #868686;
+}
+
 p.active {
     border: 1px solid #000;
 }

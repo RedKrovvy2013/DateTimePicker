@@ -15640,6 +15640,7 @@ __webpack_require__(203)
 /***/ (function(module, exports, __webpack_require__) {
 
 var angular = __webpack_require__(1)
+var moment = __webpack_require__(0)
 
 angular.module('app').directive('datePicker', function() {
     return {
@@ -15647,33 +15648,76 @@ angular.module('app').directive('datePicker', function() {
         template: __webpack_require__(123),
         link: function($scope, elem, attrs, ctrl) {
 
+            $scope.movingDate = moment($scope.datetime).date(1)
+
             $scope.updateScope = function() {
-                $scope.year = $scope.datetime.format('YYYY')
-                $scope.month = $scope.datetime.format('MMM')
-                $scope.updateMonthDays($scope.datetime.date()-1)
+                $scope.year = $scope.movingDate.format('YYYY')
+                $scope.month = $scope.movingDate.format('MMM')
+                $scope.doWeeks()
+            }
+
+            $scope.selectDate = function(date) {
+                if(!isDateBeforeToday(date))
+                    $scope.datetime = moment(date)
+                $scope.updateScope()
             }
 
             $scope.prevMonth = function() {
-                $scope.datetime.add(-1, 'M')
+                $scope.movingDate.add(-1, 'M')
                 $scope.updateScope()
             }
 
             $scope.nextMonth = function() {
-                $scope.datetime.add(1, 'M')
+                $scope.movingDate.add(1, 'M')
                 $scope.updateScope()
             }
 
-            $scope.updateMonthDays = function(day) {
-
-                $scope.datetime.date(day+1)
-
-                var daysInMonth = $scope.datetime.daysInMonth()
-                $scope.monthDays = []
-                for(var i=0; i<daysInMonth; ++i) {
-                    $scope.monthDays[i] = i
+            $scope.doWeeks = function() {
+                var date = moment($scope.movingDate)
+                while(date.day() !== 0)
+                    date.subtract(1, 'd')
+                var currentMonth = moment($scope.movingDate).month()
+                var nextMonth = moment($scope.movingDate).add(1, 'M').month()
+                $scope.weeks = []
+                while(true) {
+                    if(date.month() === nextMonth && date.day() === 0)
+                        break
+                    var week = []
+                    for(var i=0; i<7; ++i) {
+                        week.push({
+                            date: moment(date),
+                            dayOfMonth: date.date(),
+                            active: $scope.datetime.year() === date.year() &&
+                                    $scope.datetime.dayOfYear() === date.dayOfYear(),
+                            inPast: isDateBeforeToday(date),
+                            selectable: (function() {
+                                if(isDateBeforeToday(date))
+                                    return false
+                                else if(date.month()===nextMonth)
+                                    return false
+                                else
+                                    return true
+                            })(),
+                            notThisMonth: (function() {
+                                if(date.month()!==currentMonth)
+                                    return true
+                                else
+                                    return false
+                            })()
+                        })
+                        date.add(1, 'd')
+                    }
+                    $scope.weeks.push(week)
                 }
+            }
 
-                $scope.activeMonthDay = day
+            function isDateBeforeToday(date) {
+                if(date.year() < moment().year())
+                    return true
+                else if(date.year() > moment().year())
+                    return false
+                else  //years are same, so compare days of year
+                    return date.dayOfYear() < moment().dayOfYear()
             }
 
             $scope.updateScope()
@@ -58024,7 +58068,7 @@ webpackContext.id = 122;
 /* 123 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div>\r\n\r\n    <div>\r\n        <button ng-click=\"prevMonth()\">\r\n            <\r\n        </button>\r\n        <h2 style=\"display: inline;\">\r\n            {{month}} {{year}}\r\n        </h2>\r\n        <button ng-click=\"nextMonth()\">\r\n            >\r\n        </button>\r\n    </div>\r\n\r\n    <div>\r\n        <p ng-repeat=\"day in monthDays\"\r\n           ng-click=\"updateMonthDays(day)\"\r\n           ng-class=\"{'active': day===activeMonthDay}\"\r\n           style=\"display: inline-block; padding: 0 2px;\">\r\n            {{day+1}}\r\n        </p>\r\n    </div>\r\n\r\n</div>\r\n"
+module.exports = "\r\n<div>\r\n\r\n    <div>\r\n        <button ng-click=\"prevMonth()\">\r\n            <\r\n        </button>\r\n        <h2 style=\"display: inline;\">\r\n            {{month}} {{year}}\r\n        </h2>\r\n        <button ng-click=\"nextMonth()\">\r\n            >\r\n        </button>\r\n    </div>\r\n\r\n    <table>\r\n        <tr ng-repeat=\"week in weeks\">\r\n            <td ng-repeat=\"day in week\">\r\n                <p ng-click=\"selectDate(day.date)\"\r\n                   ng-class=\"{ 'selectable': day.selectable,\r\n                               'in-past': day.inPast,\r\n                               'not-this-month': day.notThisMonth,\r\n                               'active': day.active }\">{{day.dayOfMonth}}<p>\r\n            </td>\r\n        </tr>\r\n\r\n</div>\r\n"
 
 /***/ }),
 /* 124 */

@@ -1,4 +1,5 @@
 var angular = require('angular')
+var moment = require('moment')
 
 angular.module('app').directive('datePicker', function() {
     return {
@@ -6,33 +7,76 @@ angular.module('app').directive('datePicker', function() {
         template: require('./datePicker.html'),
         link: function($scope, elem, attrs, ctrl) {
 
+            $scope.movingDate = moment($scope.datetime).date(1)
+
             $scope.updateScope = function() {
-                $scope.year = $scope.datetime.format('YYYY')
-                $scope.month = $scope.datetime.format('MMM')
-                $scope.updateMonthDays($scope.datetime.date()-1)
+                $scope.year = $scope.movingDate.format('YYYY')
+                $scope.month = $scope.movingDate.format('MMM')
+                $scope.doWeeks()
+            }
+
+            $scope.selectDate = function(date) {
+                if(!isDateBeforeToday(date))
+                    $scope.datetime = moment(date)
+                $scope.updateScope()
             }
 
             $scope.prevMonth = function() {
-                $scope.datetime.add(-1, 'M')
+                $scope.movingDate.add(-1, 'M')
                 $scope.updateScope()
             }
 
             $scope.nextMonth = function() {
-                $scope.datetime.add(1, 'M')
+                $scope.movingDate.add(1, 'M')
                 $scope.updateScope()
             }
 
-            $scope.updateMonthDays = function(day) {
-
-                $scope.datetime.date(day+1)
-
-                var daysInMonth = $scope.datetime.daysInMonth()
-                $scope.monthDays = []
-                for(var i=0; i<daysInMonth; ++i) {
-                    $scope.monthDays[i] = i
+            $scope.doWeeks = function() {
+                var date = moment($scope.movingDate)
+                while(date.day() !== 0)
+                    date.subtract(1, 'd')
+                var currentMonth = moment($scope.movingDate).month()
+                var nextMonth = moment($scope.movingDate).add(1, 'M').month()
+                $scope.weeks = []
+                while(true) {
+                    if(date.month() === nextMonth && date.day() === 0)
+                        break
+                    var week = []
+                    for(var i=0; i<7; ++i) {
+                        week.push({
+                            date: moment(date),
+                            dayOfMonth: date.date(),
+                            active: $scope.datetime.year() === date.year() &&
+                                    $scope.datetime.dayOfYear() === date.dayOfYear(),
+                            inPast: isDateBeforeToday(date),
+                            selectable: (function() {
+                                if(isDateBeforeToday(date))
+                                    return false
+                                else if(date.month()===nextMonth)
+                                    return false
+                                else
+                                    return true
+                            })(),
+                            notThisMonth: (function() {
+                                if(date.month()!==currentMonth)
+                                    return true
+                                else
+                                    return false
+                            })()
+                        })
+                        date.add(1, 'd')
+                    }
+                    $scope.weeks.push(week)
                 }
+            }
 
-                $scope.activeMonthDay = day
+            function isDateBeforeToday(date) {
+                if(date.year() < moment().year())
+                    return true
+                else if(date.year() > moment().year())
+                    return false
+                else  //years are same, so compare days of year
+                    return date.dayOfYear() < moment().dayOfYear()
             }
 
             $scope.updateScope()

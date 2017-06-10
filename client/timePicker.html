@@ -1,11 +1,49 @@
 
-<div>
+<div id="time-picker">
 
-    <hour-setter hour="hour" am-pm-obj="amPmObj">
-    </hour-setter>
+    <div class="selector-container">
 
-    <input type="text" ng-model="minute" minute-formatter />
+        <table class="selector">
+            <tr>
+                <td class="icon-container">
+                    <img class="icon" src="images/clock.png" />
+                </td>
+                <td class="selected-container">
+                    <h3 class="selected-time unselected">Select time</h3>
+                </td>
+            </tr>
+        </table>
 
-    <select ng-model="selected" ng-options="option.name for option in selectOptions" />
+        <table class="dialog hidden">
+            <tr class="header">
+                <td colspan="4">
+                    <h2>
+                        October, 2017
+                    </h2>
+                </td>
+            </tr>
+            <tr class="subheader">
+                <td colspan="2"
+                    ng-class="{ 'active' : isAM }" ng-click="selectAM()">
+                    <h4>AM</h4>
+                </td>
+                <td  colspan="2"
+                     ng-class="{ 'active' : !isAM }" ng-click="selectPM()">
+                    <h4>PM</h4>
+                </td>
+            </tr>
+            <tr ng-repeat="hour in hours">
+                <td ng-repeat="quarter in hour">
+                    <p ng-click="selectTime(quarter.time)">
+                        {{quarter.formattedTime}}
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="fullscreen hidden">
+    </div>
 
 </div>

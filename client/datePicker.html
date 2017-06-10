@@ -1,27 +1,64 @@
 
-<div>
+<div id="date-picker">
 
-    <div>
-        <button ng-click="prevMonth()">
-            <
-        </button>
-        <h2 style="display: inline;">
-            {{month}} {{year}}
-        </h2>
-        <button ng-click="nextMonth()">
-            >
-        </button>
+    <div class="selector-container">
+
+        <table class="selector">
+            <tr>
+                <td class="icon-container">
+                    <img class="icon" src="images/calendar.png" />
+                </td>
+                <td class="selected-container">
+                    <h3 class="selected-date unselected">Select date</h3>
+                </td>
+            </tr>
+        </table>
+
+        <table class="dialog hidden">
+
+            <tr>
+                <td class="month-nav-container" ng-click="prevMonth()">
+                    <img src="images/left_arrow.png" />
+                </td>
+                <td>
+                    <table class="weeks">
+                        <tr class="header">
+                            <td colspan="7">
+                                <h2>
+                                    {{month}}, {{year}}
+                                </h2>
+                            </td>
+                        </tr>
+                        <tr class="subheader">
+                            <td><h4>SU</h4></td>
+                            <td><h4>MO</h4></td>
+                            <td><h4>TU</h4></td>
+                            <td><h4>WE</h4></td>
+                            <td><h4>TH</h4></td>
+                            <td><h4>FR</h4></td>
+                            <td><h4>SA</h4></td>
+                        </tr>
+                        <tr class="week" ng-repeat="week in weeks">
+                            <td ng-repeat="day in week"
+                                ng-click="selectDate(day.date)"
+                                ng-class="{ 'selectable': day.selectable,
+                                            'in-past': day.inPast,
+                                            'not-this-month': day.notThisMonth,
+                                            'active': day.active }">
+                                <p>{{day.dayOfMonth}}<p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="month-nav-container" ng-click="nextMonth()">
+                    <img src="images/right_arrow.png" />
+                </td>
+            </tr>
+        </table>
+
     </div>
 
-    <table>
-        <tr ng-repeat="week in weeks">
-            <td ng-repeat="day in week">
-                <p ng-click="selectDate(day.date)"
-                   ng-class="{ 'selectable': day.selectable,
-                               'in-past': day.inPast,
-                               'not-this-month': day.notThisMonth,
-                               'active': day.active }">{{day.dayOfMonth}}<p>
-            </td>
-        </tr>
+    <div class="fullscreen hidden">
+    </div>
 
 </div>

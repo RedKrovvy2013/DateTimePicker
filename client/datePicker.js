@@ -1,11 +1,15 @@
 var angular = require('angular')
 var moment = require('moment')
 
-angular.module('app').directive('datePicker', function() {
+require('./dialogService')
+
+angular.module('app').directive('datePicker', function(dialogService) {
     return {
         restrict: 'E',
         template: require('./datePicker.html'),
         link: function($scope, elem, attrs, ctrl) {
+
+            dialogService.setUp(elem)
 
             $scope.movingDate = moment($scope.datetime).date(1)
 
@@ -16,8 +20,9 @@ angular.module('app').directive('datePicker', function() {
             }
 
             $scope.selectDate = function(date) {
-                if(!isDateBeforeToday(date))
-                    $scope.datetime = moment(date)
+                if(!isDateBeforeToday(date) &&
+                   date.month()===$scope.movingDate.month())
+                        $scope.datetime = moment(date)
                 $scope.updateScope()
             }
 

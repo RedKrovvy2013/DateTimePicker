@@ -18,23 +18,26 @@
             <tr class="header">
                 <td colspan="4">
                     <h2>
-                        October, 2017
+                        {{formattedDate}}
                     </h2>
                 </td>
             </tr>
             <tr class="subheader">
                 <td colspan="2"
-                    ng-class="{ 'active' : isAM }" ng-click="selectAM()">
+                    ng-class="{ 'active' : isAM }" ng-click="showAM()">
                     <h4>AM</h4>
                 </td>
                 <td  colspan="2"
-                     ng-class="{ 'active' : !isAM }" ng-click="selectPM()">
+                     ng-class="{ 'active' : !isAM }" ng-click="showPM()">
                     <h4>PM</h4>
                 </td>
             </tr>
-            <tr ng-repeat="hour in hours">
-                <td ng-repeat="quarter in hour">
-                    <p ng-click="selectTime(quarter.time)">
+            <tr class="hour" ng-repeat="hour in hours">
+                <td ng-repeat="quarter in hour"
+                    ng-click="selectTime(quarter.time, quarter.selectable)"
+                    ng-class="{ 'selectable': quarter.selectable,
+                                'active': quarter.active }">
+                    <p>
                         {{quarter.formattedTime}}
                     </p>
                 </td>

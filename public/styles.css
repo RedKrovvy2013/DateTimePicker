@@ -97,7 +97,7 @@ td.selected-container {
 }
 
 #date-picker .selector-container {
-    width: 350px;
+    width: 470px;
 }
 
 #date-picker .dialog {
@@ -128,11 +128,17 @@ td.selected-container {
 }
 
 #date-picker tr.week td.in-past,
-#date-picker tr.week td.in-past.not-this-month {
+#date-picker tr.week td.in-past.not-this-month,
+#time-picker tr.hour td {
     color: #e0e0e0;
 }
 
-#date-picker tr.week td.selectable:hover {
+#time-picker tr.hour td.selectable {
+    color: #000;
+}
+
+#date-picker tr.week td.selectable:hover,
+#time-picker tr.hour td.selectable:hover {
     background-color: #eeba97;
 }
 
@@ -145,7 +151,9 @@ td.selected-container {
 }
 
 #date-picker tr.week td.active,
-#date-picker tr.week td.selectable.active:hover {
+#date-picker tr.week td.selectable.active:hover,
+#time-picker tr.hour td.active,
+#time-picker tr.hour td.selectable.active:hover {
     color: #fff;
     background-color: #ee780c;
 }
@@ -155,7 +163,7 @@ td.selected-container {
 }
 
 #time-picker .dialog {
-    left: 440px;
+    left: 560px;
 }
 
 #time-picker .subheader .active {

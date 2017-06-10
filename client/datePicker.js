@@ -6,23 +6,42 @@ require('./dialogService')
 angular.module('app').directive('datePicker', function(dialogService) {
     return {
         restrict: 'E',
+        require: '^dateTimePicker',
         template: require('./datePicker.html'),
-        link: function($scope, elem, attrs, ctrl) {
+        link: function($scope, elem, attrs, dtCtrl) {
 
-            dialogService.setUp(elem)
+            $scope.requestedDate = dtCtrl.order.requestedDateTime
 
-            $scope.movingDate = moment($scope.datetime).date(1)
+            dialogService.setUp(elem, handleClose)
+
+            function handleClose() {
+                if($scope.requestedDate) {
+                    dtCtrl.updateDate($scope.requestedDate)
+                    elem.find(".selector-container h3")
+                        .removeClass("unselected")
+                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
+                } else {
+                    elem.find(".selector-container h3")
+                        .addClass("unselected")
+                        .text("Select date")
+                }
+            }
+
+            if($scope.requestedDate)
+                $scope.movingDate = moment($scope.requestedDate).date(1)
+            else
+                $scope.movingDate = moment().date(1)
 
             $scope.updateScope = function() {
                 $scope.year = $scope.movingDate.format('YYYY')
-                $scope.month = $scope.movingDate.format('MMM')
+                $scope.month = $scope.movingDate.format('MMMM')
                 $scope.doWeeks()
             }
 
             $scope.selectDate = function(date) {
                 if(!isDateBeforeToday(date) &&
                    date.month()===$scope.movingDate.month())
-                        $scope.datetime = moment(date)
+                        $scope.requestedDate = moment(date)
                 $scope.updateScope()
             }
 
@@ -51,8 +70,14 @@ angular.module('app').directive('datePicker', function(dialogService) {
                         week.push({
                             date: moment(date),
                             dayOfMonth: date.date(),
-                            active: $scope.datetime.year() === date.year() &&
-                                    $scope.datetime.dayOfYear() === date.dayOfYear(),
+                            active: (function() {
+                                if(!$scope.requestedDate) {
+                                    return false
+                                } else {
+                                    return $scope.requestedDate.year() === date.year() &&
+                                           $scope.requestedDate.dayOfYear() === date.dayOfYear()
+                                }
+                            })(),
                             inPast: isDateBeforeToday(date),
                             selectable: (function() {
                                 if(isDateBeforeToday(date))

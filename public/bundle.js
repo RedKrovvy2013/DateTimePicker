@@ -15647,23 +15647,42 @@ __webpack_require__(205)
 angular.module('app').directive('datePicker', function(dialogService) {
     return {
         restrict: 'E',
+        require: '^dateTimePicker',
         template: __webpack_require__(123),
-        link: function($scope, elem, attrs, ctrl) {
+        link: function($scope, elem, attrs, dtCtrl) {
 
-            dialogService.setUp(elem)
+            $scope.requestedDate = dtCtrl.order.requestedDateTime
 
-            $scope.movingDate = moment($scope.datetime).date(1)
+            dialogService.setUp(elem, handleClose)
+
+            function handleClose() {
+                if($scope.requestedDate) {
+                    dtCtrl.updateDate($scope.requestedDate)
+                    elem.find(".selector-container h3")
+                        .removeClass("unselected")
+                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
+                } else {
+                    elem.find(".selector-container h3")
+                        .addClass("unselected")
+                        .text("Select date")
+                }
+            }
+
+            if($scope.requestedDate)
+                $scope.movingDate = moment($scope.requestedDate).date(1)
+            else
+                $scope.movingDate = moment().date(1)
 
             $scope.updateScope = function() {
                 $scope.year = $scope.movingDate.format('YYYY')
-                $scope.month = $scope.movingDate.format('MMM')
+                $scope.month = $scope.movingDate.format('MMMM')
                 $scope.doWeeks()
             }
 
             $scope.selectDate = function(date) {
                 if(!isDateBeforeToday(date) &&
                    date.month()===$scope.movingDate.month())
-                        $scope.datetime = moment(date)
+                        $scope.requestedDate = moment(date)
                 $scope.updateScope()
             }
 
@@ -15692,8 +15711,14 @@ angular.module('app').directive('datePicker', function(dialogService) {
                         week.push({
                             date: moment(date),
                             dayOfMonth: date.date(),
-                            active: $scope.datetime.year() === date.year() &&
-                                    $scope.datetime.dayOfYear() === date.dayOfYear(),
+                            active: (function() {
+                                if(!$scope.requestedDate) {
+                                    return false
+                                } else {
+                                    return $scope.requestedDate.year() === date.year() &&
+                                           $scope.requestedDate.dayOfYear() === date.dayOfYear()
+                                }
+                            })(),
                             inPast: isDateBeforeToday(date),
                             selectable: (function() {
                                 if(isDateBeforeToday(date))
@@ -15744,26 +15769,78 @@ __webpack_require__(205)
 angular.module('app').directive('timePicker', function(dialogService) {
     return {
         restrict: 'E',
+        require: '^dateTimePicker',
         template: __webpack_require__(124),
         link: {
-            pre: function($scope, elem, attrs, ctrl) {
+            pre: function($scope, elem, attrs, dtCtrl) {
 
-                dialogService.setUp(elem)
+                $scope.$on("dateSelected", function() {
+                    $scope.formattedDate = dtCtrl.requestedDate.format("MMMM D, YYYY")
+                    if(!$scope.requestedTime) {
+                        $scope.showAM()
+                    } else {
+                        $scope.requestedTime.year(dtCtrl.requestedDate.year())
+                        $scope.requestedTime.dayOfYear(dtCtrl.requestedDate.dayOfYear())
+                        if(!isDuringOpenHours($scope.requestedTime)) {
+                            dtCtrl.updateTime(null)
+                            elem.find(".selector-container h3")
+                                .addClass("unselected")
+                                .text("Select time")
+                        } else {
+                            elem.find(".selector-container h3")
+                                .removeClass("unselected")
+                                .text($scope.requestedTime.format("h:mm A"))
+                        }
+                        //only update view once $scope.requestedTime
+                        //is set on same year/day as dtCtrl.requestedDate,
+                        //so that 'active' can be determined
+                        if($scope.requestedTime.hour() < 12) //AM
+                            $scope.showAM()
+                        else
+                            $scope.showPM()
+                    }
+                    $scope.$digest()
+                })
 
-                $scope.isAM = true
+                dialogService.setUp(elem, handleClose)
+
+                function handleClose() {
+                    if($scope.requestedTime) {
+                        dtCtrl.updateTime($scope.requestedTime)
+                        elem.find(".selector-container h3")
+                            .removeClass("unselected")
+                            .text($scope.requestedTime.format("h:mm A"))
+                    } else {
+                        elem.find(".selector-container h3")
+                            .addClass("unselected")
+                            .text("Select time")
+                    }
+                }
 
                 $scope.doHours = function() {
-                    if($scope.isAM)
-                        $scope.movingTime = moment().hour(0).minute(0)
-                    else
-                        $scope.movingTime = moment().hour(12).minute(0)
+                    if($scope.isAM) {
+                        $scope.movingTime
+                            = moment(dtCtrl.requestedDate).hour(0).minute(0)
+                    } else {
+                        $scope.movingTime
+                            = moment(dtCtrl.requestedDate).hour(12).minute(0)
+                    }
                     $scope.hours = []
                     for(var i=0; i<12; ++i) {
                         var hour = []
                         for(var j=0; j<4; ++j) {
                             hour.push({
                                 time: moment($scope.movingTime),
-                                formattedTime: $scope.movingTime.format("hh:mm A")
+                                formattedTime: $scope.movingTime.format("hh:mm A"),
+                                selectable: isDuringOpenHours($scope.movingTime),
+                                active: (function() {
+                                    if(!$scope.requestedTime) {
+                                        return false
+                                    } else {
+                                        return $scope.movingTime.isSame($scope.requestedTime)
+                                               && isDuringOpenHours($scope.movingTime)
+                                    }
+                                })()
                             })
                             $scope.movingTime.add(15, 'm')
                         }
@@ -15771,17 +15848,39 @@ angular.module('app').directive('timePicker', function(dialogService) {
                     }
                 }
 
-                $scope.selectAM = function() {
+                $scope.selectTime = function(time, selectable) {
+                    if(selectable) {
+                        $scope.requestedTime = time
+                        $scope.doHours()
+                    }
+                }
+
+                $scope.showAM = function() {
                     $scope.isAM = true
                     $scope.doHours()
                 }
 
-                $scope.selectPM = function() {
+                $scope.showPM = function() {
                     $scope.isAM = false
                     $scope.doHours()
                 }
 
-                $scope.selectAM()
+                function isDuringOpenHours(time) {
+                    if( time.day() === 0 ||
+                        time.day() === 6 ) { //weekend
+                            if(time.hour() >= 10 &&
+                               time.hour() < 16)
+                                  return true
+                            else
+                                  return false
+                    } else { //weekday
+                            if(time.hour() >= 7 &&
+                               time.hour() < 20)
+                                  return true
+                            else
+                                  return false
+                    }
+                }
 
             },
             post: function() {}
@@ -58086,7 +58185,7 @@ module.exports = "\r\n<div id=\"date-picker\">\r\n\r\n    <div class=\"selector-
 /* 124 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div id=\"time-picker\">\r\n\r\n    <div class=\"selector-container\">\r\n\r\n        <table class=\"selector\">\r\n            <tr>\r\n                <td class=\"icon-container\">\r\n                    <img class=\"icon\" src=\"images/clock.png\" />\r\n                </td>\r\n                <td class=\"selected-container\">\r\n                    <h3 class=\"selected-time unselected\">Select time</h3>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n        <table class=\"dialog hidden\">\r\n            <tr class=\"header\">\r\n                <td colspan=\"4\">\r\n                    <h2>\r\n                        October, 2017\r\n                    </h2>\r\n                </td>\r\n            </tr>\r\n            <tr class=\"subheader\">\r\n                <td colspan=\"2\"\r\n                    ng-class=\"{ 'active' : isAM }\" ng-click=\"selectAM()\">\r\n                    <h4>AM</h4>\r\n                </td>\r\n                <td  colspan=\"2\"\r\n                     ng-class=\"{ 'active' : !isAM }\" ng-click=\"selectPM()\">\r\n                    <h4>PM</h4>\r\n                </td>\r\n            </tr>\r\n            <tr ng-repeat=\"hour in hours\">\r\n                <td ng-repeat=\"quarter in hour\">\r\n                    <p ng-click=\"selectTime(quarter.time)\">\r\n                        {{quarter.formattedTime}}\r\n                    </p>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n    </div>\r\n\r\n    <div class=\"fullscreen hidden\">\r\n    </div>\r\n\r\n</div>\r\n"
+module.exports = "\r\n<div id=\"time-picker\">\r\n\r\n    <div class=\"selector-container\">\r\n\r\n        <table class=\"selector\">\r\n            <tr>\r\n                <td class=\"icon-container\">\r\n                    <img class=\"icon\" src=\"images/clock.png\" />\r\n                </td>\r\n                <td class=\"selected-container\">\r\n                    <h3 class=\"selected-time unselected\">Select time</h3>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n        <table class=\"dialog hidden\">\r\n            <tr class=\"header\">\r\n                <td colspan=\"4\">\r\n                    <h2>\r\n                        {{formattedDate}}\r\n                    </h2>\r\n                </td>\r\n            </tr>\r\n            <tr class=\"subheader\">\r\n                <td colspan=\"2\"\r\n                    ng-class=\"{ 'active' : isAM }\" ng-click=\"showAM()\">\r\n                    <h4>AM</h4>\r\n                </td>\r\n                <td  colspan=\"2\"\r\n                     ng-class=\"{ 'active' : !isAM }\" ng-click=\"showPM()\">\r\n                    <h4>PM</h4>\r\n                </td>\r\n            </tr>\r\n            <tr class=\"hour\" ng-repeat=\"hour in hours\">\r\n                <td ng-repeat=\"quarter in hour\"\r\n                    ng-click=\"selectTime(quarter.time, quarter.selectable)\"\r\n                    ng-class=\"{ 'selectable': quarter.selectable,\r\n                                'active': quarter.active }\">\r\n                    <p>\r\n                        {{quarter.formattedTime}}\r\n                    </p>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n    </div>\r\n\r\n    <div class=\"fullscreen hidden\">\r\n    </div>\r\n\r\n</div>\r\n"
 
 /***/ }),
 /* 125 */
@@ -58215,13 +58314,32 @@ angular.module('app').directive('dateTimePicker', function() {
         transclude: true,
         template: __webpack_require__(204),
         scope: { },
+        controller: function($scope) {
+            var ctrl = this
+
+            ctrl.order = {
+                requestedDatetime: null,
+                // requestedDatetime: moment(),
+                timeZone: 'America/Los_Angeles'
+            }
+
+            ctrl.updateDate = function(date) {
+                ctrl.requestedDate = date
+                $scope.$broadcast("dateSelected")
+            }
+
+            ctrl.updateTime = function(time) { //can be null, if date changed
+                                               //and prev selected time is now
+                                               //a closed time
+                ctrl.requestedTime = time
+            }
+
+        },
         link: {
             pre: function($scope, elem, attrs, ctrl) {
 
-                $scope.datetime = moment()
-
                 $scope.check = function() {
-                    console.log($scope.datetime)
+                    console.log($scope.order.requestDatetime)
                 }
 
             },
@@ -58245,7 +58363,7 @@ var angular = __webpack_require__(1)
 
 angular.module('app').service('dialogService', function() {
 
-    this.setUp = function(elem) {
+    this.setUp = function(elem, onClose) {
 
         elem.find(".selector-container").click(function(e) {
             e.stopPropagation()
@@ -58258,6 +58376,7 @@ angular.module('app').service('dialogService', function() {
             elem.find(".dialog").addClass('hidden')
             elem.find(".fullscreen").addClass('hidden')
             elem.find(".selector-container").removeClass('active')
+            onClose()
         })
     }
 

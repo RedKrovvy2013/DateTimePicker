@@ -6,32 +6,48 @@ require('./dialogService')
 angular.module('app').directive('timePicker', function(dialogService) {
     return {
         restrict: 'E',
-        require: '^dateTimePicker',
         template: require('./timePicker.html'),
         link: {
-            pre: function($scope, elem, attrs, dtCtrl) {
+            pre: function($scope, elem, attrs, ctrl) {
+
+                $scope.$watch("requestedDate", function() {
+                    if($scope.requestedDate===null)
+                        elem.find(".selector-container").addClass("disabled")
+                    else
+                        elem.find(".selector-container").removeClass("disabled")
+                })
+
+                $scope.$watch("requestedTime", function(newVal, oldVal) {
+                    if(newVal===null) {
+                        elem.find(".selector-container h3")
+                            .addClass("unselected")
+                            .text("Select time")
+                    } else {
+                        elem.find(".selector-container h3")
+                            .removeClass("unselected")
+                            .text($scope.requestedTime.format("h:mm A"))
+                    }
+                    $scope.doHours()
+                })
+
+                elem.find(".selector-container h3")
+                    .addClass("unselected")
+                    .text("Select time")
 
                 $scope.$on("dateSelected", function() {
-                    $scope.formattedDate = dtCtrl.requestedDate.format("MMMM D, YYYY")
+                    $scope.formattedDate = $scope.requestedDate.format("MMMM D, YYYY")
                     if(!$scope.requestedTime) {
                         $scope.showAM()
                     } else {
-                        $scope.requestedTime.year(dtCtrl.requestedDate.year())
-                        $scope.requestedTime.dayOfYear(dtCtrl.requestedDate.dayOfYear())
-                        if(!isDuringOpenHours($scope.requestedTime)) {
-                            dtCtrl.updateTime(null)
-                            elem.find(".selector-container h3")
-                                .addClass("unselected")
-                                .text("Select time")
-                        } else {
-                            elem.find(".selector-container h3")
-                                .removeClass("unselected")
-                                .text($scope.requestedTime.format("h:mm A"))
-                        }
+                        $scope.requestedTime.year($scope.requestedDate.year())
+                        $scope.requestedTime.dayOfYear($scope.requestedDate.dayOfYear())
+                        if(!isDuringOpenHours($scope.requestedTime))
+                            $scope.$emit("updateTime", null)
                         //only update view once $scope.requestedTime
-                        //is set on same year/day as dtCtrl.requestedDate,
+                        //is set on same year/day as $scope.requestedDate,
                         //so that 'active' can be determined
-                        if($scope.requestedTime.hour() < 12) //AM
+                        if($scope.requestedTime &&
+                           $scope.requestedTime.hour() < 12) //AM
                             $scope.showAM()
                         else
                             $scope.showPM()
@@ -42,25 +58,17 @@ angular.module('app').directive('timePicker', function(dialogService) {
                 dialogService.setUp(elem, handleClose)
 
                 function handleClose() {
-                    if($scope.requestedTime) {
-                        dtCtrl.updateTime($scope.requestedTime)
-                        elem.find(".selector-container h3")
-                            .removeClass("unselected")
-                            .text($scope.requestedTime.format("h:mm A"))
-                    } else {
-                        elem.find(".selector-container h3")
-                            .addClass("unselected")
-                            .text("Select time")
-                    }
+                    if($scope.requestedTime)
+                        $scope.$emit("updateTime", $scope.requestedTime)
                 }
 
                 $scope.doHours = function() {
                     if($scope.isAM) {
                         $scope.movingTime
-                            = moment(dtCtrl.requestedDate).hour(0).minute(0)
+                            = moment($scope.requestedDate).hour(0).minute(0)
                     } else {
                         $scope.movingTime
-                            = moment(dtCtrl.requestedDate).hour(12).minute(0)
+                            = moment($scope.requestedDate).hour(12).minute(0)
                     }
                     $scope.hours = []
                     for(var i=0; i<12; ++i) {

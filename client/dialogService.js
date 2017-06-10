@@ -6,9 +6,11 @@ angular.module('app').service('dialogService', function() {
 
         elem.find(".selector-container").click(function(e) {
             e.stopPropagation()
-            elem.find(".dialog").removeClass('hidden')
-            elem.find(".fullscreen").removeClass('hidden')
-            elem.find(".selector-container").addClass('active')
+            if(!elem.find(".selector-container").hasClass("disabled")) {
+                elem.find(".dialog").removeClass('hidden')
+                elem.find(".fullscreen").removeClass('hidden')
+                elem.find(".selector-container").addClass('active')
+            }
         })
 
         elem.find(".fullscreen").click(function() {

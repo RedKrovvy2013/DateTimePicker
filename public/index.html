@@ -10,8 +10,16 @@
     </head>
     <body ng-app="app">
 
-        <date-time-picker>
-        </date-time-picker>
+        <div ng-controller="mainController">
+
+            <date-time-picker ng-model="order.requestedDatetime">
+            </date-time-picker>
+
+            <button style="position: fixed; bottom: 0;" ng-click="check()">
+                Check
+            </button>
+
+        </div>
 
     </body>
 </html>

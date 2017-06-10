@@ -6,31 +6,33 @@ require('./dialogService')
 angular.module('app').directive('datePicker', function(dialogService) {
     return {
         restrict: 'E',
-        require: '^dateTimePicker',
         template: require('./datePicker.html'),
-        link: function($scope, elem, attrs, dtCtrl) {
+        link: function($scope, elem, attrs, ctrl) {
 
-            $scope.requestedDate = dtCtrl.order.requestedDateTime
+            $scope.$watch("requestedDate", function(newVal, oldVal){
+                if(newVal===null) {
+                    elem.find(".selector-container h3")
+                        .addClass("unselected")
+                        .text("Select date")
+                } else {
+                    elem.find(".selector-container h3")
+                        .removeClass("unselected")
+                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
+                }
+                
+                if($scope.requestedDate)
+                    $scope.movingDate = moment($scope.requestedDate).date(1)
+                else
+                    $scope.movingDate = moment().date(1)
+                $scope.updateScope()
+            })
 
             dialogService.setUp(elem, handleClose)
 
             function handleClose() {
-                if($scope.requestedDate) {
-                    dtCtrl.updateDate($scope.requestedDate)
-                    elem.find(".selector-container h3")
-                        .removeClass("unselected")
-                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
-                } else {
-                    elem.find(".selector-container h3")
-                        .addClass("unselected")
-                        .text("Select date")
-                }
+                if($scope.requestedDate)
+                    $scope.$emit("updateDate", $scope.requestedDate)
             }
-
-            if($scope.requestedDate)
-                $scope.movingDate = moment($scope.requestedDate).date(1)
-            else
-                $scope.movingDate = moment().date(1)
 
             $scope.updateScope = function() {
                 $scope.year = $scope.movingDate.format('YYYY')
@@ -108,8 +110,6 @@ angular.module('app').directive('datePicker', function(dialogService) {
                 else  //years are same, so compare days of year
                     return date.dayOfYear() < moment().dayOfYear()
             }
-
-            $scope.updateScope()
 
         }
     }

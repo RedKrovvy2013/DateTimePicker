@@ -15633,6 +15633,7 @@ var angular = __webpack_require__(1)
 var app = angular.module('app', [])
 
 __webpack_require__(203)
+__webpack_require__(206)
 
 
 /***/ }),
@@ -15647,31 +15648,33 @@ __webpack_require__(205)
 angular.module('app').directive('datePicker', function(dialogService) {
     return {
         restrict: 'E',
-        require: '^dateTimePicker',
         template: __webpack_require__(123),
-        link: function($scope, elem, attrs, dtCtrl) {
+        link: function($scope, elem, attrs, ctrl) {
 
-            $scope.requestedDate = dtCtrl.order.requestedDateTime
+            $scope.$watch("requestedDate", function(newVal, oldVal){
+                if(newVal===null) {
+                    elem.find(".selector-container h3")
+                        .addClass("unselected")
+                        .text("Select date")
+                } else {
+                    elem.find(".selector-container h3")
+                        .removeClass("unselected")
+                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
+                }
+                
+                if($scope.requestedDate)
+                    $scope.movingDate = moment($scope.requestedDate).date(1)
+                else
+                    $scope.movingDate = moment().date(1)
+                $scope.updateScope()
+            })
 
             dialogService.setUp(elem, handleClose)
 
             function handleClose() {
-                if($scope.requestedDate) {
-                    dtCtrl.updateDate($scope.requestedDate)
-                    elem.find(".selector-container h3")
-                        .removeClass("unselected")
-                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
-                } else {
-                    elem.find(".selector-container h3")
-                        .addClass("unselected")
-                        .text("Select date")
-                }
+                if($scope.requestedDate)
+                    $scope.$emit("updateDate", $scope.requestedDate)
             }
-
-            if($scope.requestedDate)
-                $scope.movingDate = moment($scope.requestedDate).date(1)
-            else
-                $scope.movingDate = moment().date(1)
 
             $scope.updateScope = function() {
                 $scope.year = $scope.movingDate.format('YYYY')
@@ -15750,8 +15753,6 @@ angular.module('app').directive('datePicker', function(dialogService) {
                     return date.dayOfYear() < moment().dayOfYear()
             }
 
-            $scope.updateScope()
-
         }
     }
 })
@@ -15769,32 +15770,48 @@ __webpack_require__(205)
 angular.module('app').directive('timePicker', function(dialogService) {
     return {
         restrict: 'E',
-        require: '^dateTimePicker',
         template: __webpack_require__(124),
         link: {
-            pre: function($scope, elem, attrs, dtCtrl) {
+            pre: function($scope, elem, attrs, ctrl) {
+
+                $scope.$watch("requestedDate", function() {
+                    if($scope.requestedDate===null)
+                        elem.find(".selector-container").addClass("disabled")
+                    else
+                        elem.find(".selector-container").removeClass("disabled")
+                })
+
+                $scope.$watch("requestedTime", function(newVal, oldVal) {
+                    if(newVal===null) {
+                        elem.find(".selector-container h3")
+                            .addClass("unselected")
+                            .text("Select time")
+                    } else {
+                        elem.find(".selector-container h3")
+                            .removeClass("unselected")
+                            .text($scope.requestedTime.format("h:mm A"))
+                    }
+                    $scope.doHours()
+                })
+
+                elem.find(".selector-container h3")
+                    .addClass("unselected")
+                    .text("Select time")
 
                 $scope.$on("dateSelected", function() {
-                    $scope.formattedDate = dtCtrl.requestedDate.format("MMMM D, YYYY")
+                    $scope.formattedDate = $scope.requestedDate.format("MMMM D, YYYY")
                     if(!$scope.requestedTime) {
                         $scope.showAM()
                     } else {
-                        $scope.requestedTime.year(dtCtrl.requestedDate.year())
-                        $scope.requestedTime.dayOfYear(dtCtrl.requestedDate.dayOfYear())
-                        if(!isDuringOpenHours($scope.requestedTime)) {
-                            dtCtrl.updateTime(null)
-                            elem.find(".selector-container h3")
-                                .addClass("unselected")
-                                .text("Select time")
-                        } else {
-                            elem.find(".selector-container h3")
-                                .removeClass("unselected")
-                                .text($scope.requestedTime.format("h:mm A"))
-                        }
+                        $scope.requestedTime.year($scope.requestedDate.year())
+                        $scope.requestedTime.dayOfYear($scope.requestedDate.dayOfYear())
+                        if(!isDuringOpenHours($scope.requestedTime))
+                            $scope.$emit("updateTime", null)
                         //only update view once $scope.requestedTime
-                        //is set on same year/day as dtCtrl.requestedDate,
+                        //is set on same year/day as $scope.requestedDate,
                         //so that 'active' can be determined
-                        if($scope.requestedTime.hour() < 12) //AM
+                        if($scope.requestedTime &&
+                           $scope.requestedTime.hour() < 12) //AM
                             $scope.showAM()
                         else
                             $scope.showPM()
@@ -15805,25 +15822,17 @@ angular.module('app').directive('timePicker', function(dialogService) {
                 dialogService.setUp(elem, handleClose)
 
                 function handleClose() {
-                    if($scope.requestedTime) {
-                        dtCtrl.updateTime($scope.requestedTime)
-                        elem.find(".selector-container h3")
-                            .removeClass("unselected")
-                            .text($scope.requestedTime.format("h:mm A"))
-                    } else {
-                        elem.find(".selector-container h3")
-                            .addClass("unselected")
-                            .text("Select time")
-                    }
+                    if($scope.requestedTime)
+                        $scope.$emit("updateTime", $scope.requestedTime)
                 }
 
                 $scope.doHours = function() {
                     if($scope.isAM) {
                         $scope.movingTime
-                            = moment(dtCtrl.requestedDate).hour(0).minute(0)
+                            = moment($scope.requestedDate).hour(0).minute(0)
                     } else {
                         $scope.movingTime
-                            = moment(dtCtrl.requestedDate).hour(12).minute(0)
+                            = moment($scope.requestedDate).hour(12).minute(0)
                     }
                     $scope.hours = []
                     for(var i=0; i<12; ++i) {
@@ -58312,38 +58321,54 @@ angular.module('app').directive('dateTimePicker', function() {
     return {
         restrict: 'E',
         transclude: true,
+        require: 'ngModel',
         template: __webpack_require__(204),
         scope: { },
-        controller: function($scope) {
-            var ctrl = this
-
-            ctrl.order = {
-                requestedDatetime: null,
-                // requestedDatetime: moment(),
-                timeZone: 'America/Los_Angeles'
-            }
-
-            ctrl.updateDate = function(date) {
-                ctrl.requestedDate = date
-                $scope.$broadcast("dateSelected")
-            }
-
-            ctrl.updateTime = function(time) { //can be null, if date changed
-                                               //and prev selected time is now
-                                               //a closed time
-                ctrl.requestedTime = time
-            }
-
-        },
         link: {
-            pre: function($scope, elem, attrs, ctrl) {
+            pre: function($scope, elem, attrs, ngModelCtrl) {
 
-                $scope.check = function() {
-                    console.log($scope.order.requestDatetime)
+                ngModelCtrl.$formatters.push(function(modelValue) {
+                    console.log("formatters")
+                    if(!modelValue) {
+                        $scope.requestedDate = null
+                        $scope.requestedTime = null
+                    } else {
+                        $scope.requestedDate = modelValue
+                        $scope.requestedTime = modelValue
+                    }
+                })
+
+                $scope.$on("updateDate", function(e, date) {
+                    $scope.requestedDate = date
+                    $scope.$broadcast("dateSelected")
+                    $scope.updateNgModel()
+                })
+
+                $scope.$on("updateTime", function(e, time) {
+                                                    //can be null, if date changed
+                                                   //and prev selected time is now
+                                                   //a closed time
+                    $scope.requestedTime = time
+                    $scope.updateNgModel()
+                })
+
+                $scope.updateNgModel = function() {
+                    if(!$scope.requestedDate || !$scope.requestedTime) {
+                        ngModelCtrl.$setViewValue(null)
+                    } else {
+                        var newDatetime = moment($scope.requestedDate)
+                        newDatetime.hour($scope.requestedTime.hour())
+                        newDatetime.minute($scope.requestedTime.minute())
+                        ngModelCtrl.$setViewValue(newDatetime)
+                    }
                 }
 
+                ngModelCtrl.$parsers.push(function(viewValue) {
+                    return viewValue
+                })
+
             },
-            post: function() {}
+            post: function($scope, elem, attrs, ctrl) { },
         }
     }
 })
@@ -58353,7 +58378,7 @@ angular.module('app').directive('dateTimePicker', function() {
 /* 204 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div>\r\n    <date-picker>\r\n    </date-picker>\r\n    <time-picker>\r\n    </time-picker>\r\n    <div>\r\n        <button style=\"position: fixed; bottom: 0;\" ng-click=\"check()\">\r\n            Check\r\n        </button>\r\n    </div>\r\n</div>\r\n"
+module.exports = "\r\n<div>\r\n    <date-picker>\r\n    </date-picker>\r\n    <time-picker>\r\n    </time-picker>\r\n</div>\r\n"
 
 /***/ }),
 /* 205 */
@@ -58367,9 +58392,11 @@ angular.module('app').service('dialogService', function() {
 
         elem.find(".selector-container").click(function(e) {
             e.stopPropagation()
-            elem.find(".dialog").removeClass('hidden')
-            elem.find(".fullscreen").removeClass('hidden')
-            elem.find(".selector-container").addClass('active')
+            if(!elem.find(".selector-container").hasClass("disabled")) {
+                elem.find(".dialog").removeClass('hidden')
+                elem.find(".fullscreen").removeClass('hidden')
+                elem.find(".selector-container").addClass('active')
+            }
         })
 
         elem.find(".fullscreen").click(function() {
@@ -58380,6 +58407,25 @@ angular.module('app').service('dialogService', function() {
         })
     }
 
+})
+
+
+/***/ }),
+/* 206 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var angular = __webpack_require__(1)
+var moment = __webpack_require__(0)
+
+angular.module('app').controller('mainController', function($scope) {
+    $scope.order = {
+        requestedDatetime: null,
+        // requestedDatetime: moment().month(6).hour(11).minute(15),
+        timeZone: 'America/Los_Angeles'
+    }
+    $scope.check = function() {
+        console.log($scope.order.requestedDatetime)
+    }
 })
 
 

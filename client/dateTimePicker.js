@@ -1,5 +1,5 @@
 var angular = require('angular')
-var moment = require('moment')
+var moment = require('moment-timezone')
 
 require('./datePicker.js')
 require('./timePicker.js')
@@ -10,18 +10,19 @@ angular.module('app').directive('dateTimePicker', function() {
         transclude: true,
         require: 'ngModel',
         template: require('./dateTimePicker.html'),
-        scope: { },
+        scope: {
+            sbTimeZone: "<"
+        },
         link: {
             pre: function($scope, elem, attrs, ngModelCtrl) {
 
                 ngModelCtrl.$formatters.push(function(modelValue) {
-                    console.log("formatters")
                     if(!modelValue) {
                         $scope.requestedDate = null
                         $scope.requestedTime = null
                     } else {
-                        $scope.requestedDate = modelValue
-                        $scope.requestedTime = modelValue
+                        $scope.requestedDate = moment(modelValue)
+                        $scope.requestedTime = moment(modelValue)
                     }
                 })
 
@@ -53,6 +54,28 @@ angular.module('app').directive('dateTimePicker', function() {
                 ngModelCtrl.$parsers.push(function(viewValue) {
                     return viewValue
                 })
+
+                $scope.$watch("sbTimeZone", function() {
+                    // 3 scenarios:
+                        // 1: reqTime and reqDate are null, so do nothing
+                        // 2: reqDate is only not null, so just update it
+                        // 3: reqDate and reqTime are both not null, so update
+                        //    reqDatetime which in turn updates reqDate and reqTime
+                    if($scope.requestedDate) {
+                        updateMomentToTZ($scope.requestedDate, $scope.sbTimeZone)
+                        if($scope.requestedTime) {
+                            updateMomentToTZ($scope.requestedTime, $scope.sbTimeZone)
+                            $scope.updateNgModel()
+                        }
+                    }
+                })
+
+                function updateMomentToTZ(aMoment, tz) {
+                    var oldMoment = moment(aMoment)
+                    aMoment.tz(tz)
+                    var amountToRegain = oldMoment._offset - aMoment._offset
+                    aMoment.add(amountToRegain, 'm')
+                }
 
             },
             post: function($scope, elem, attrs, ctrl) { },

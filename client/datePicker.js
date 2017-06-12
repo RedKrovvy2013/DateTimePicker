@@ -1,5 +1,5 @@
 var angular = require('angular')
-var moment = require('moment')
+var moment = require('moment-timezone')
 
 require('./dialogService')
 
@@ -19,13 +19,15 @@ angular.module('app').directive('datePicker', function(dialogService) {
                         .removeClass("unselected")
                         .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
                 }
-                
+
                 if($scope.requestedDate)
                     $scope.movingDate = moment($scope.requestedDate).date(1)
                 else
-                    $scope.movingDate = moment().date(1)
+                    $scope.movingDate = moment().tz($scope.sbTimeZone).date(1)
                 $scope.updateScope()
-            })
+            }, true)
+               //time zone change leads to sub-property changing,
+               //so must do $watch will full comparison to see change and update
 
             dialogService.setUp(elem, handleClose)
 
@@ -103,12 +105,16 @@ angular.module('app').directive('datePicker', function(dialogService) {
             }
 
             function isDateBeforeToday(date) {
-                if(date.year() < moment().year())
+                if(date.year() < moment().tz($scope.sbTimeZone).year())
                     return true
-                else if(date.year() > moment().year())
+                else if(date.year() > moment().tz($scope.sbTimeZone).year())
                     return false
                 else  //years are same, so compare days of year
-                    return date.dayOfYear() < moment().dayOfYear()
+                    return date.dayOfYear() < moment().tz($scope.sbTimeZone).dayOfYear()
+            }
+
+            $scope.check = function() {
+                console.log($scope.requestedDate)
             }
 
         }

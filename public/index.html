@@ -12,12 +12,21 @@
 
         <div ng-controller="mainController">
 
-            <date-time-picker ng-model="order.requestedDatetime">
+            <date-time-picker ng-model="order.requestedDatetime"
+                              sb-time-zone="order.timeZone">
             </date-time-picker>
 
-            <button style="position: fixed; bottom: 0;" ng-click="check()">
-                Check
-            </button>
+            <div class="check-btns-container">
+
+                <button ng-click="check()">
+                    Check
+                </button>
+
+                <button ng-click="changeTimeZone()">
+                    Change Time Zone
+                </button>
+
+            </div>
 
         </div>
 

@@ -176,3 +176,8 @@ td.selected-container {
     width: 100px;
     text-align-left;
 }
+
+.check-btns-container {
+    position: fixed;
+    bottom: 0;
+}

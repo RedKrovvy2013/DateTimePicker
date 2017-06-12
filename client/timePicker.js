@@ -1,5 +1,5 @@
 var angular = require('angular')
-var moment = require('moment')
+var moment = require('moment-timezone')
 
 require('./dialogService')
 
@@ -28,7 +28,7 @@ angular.module('app').directive('timePicker', function(dialogService) {
                             .text($scope.requestedTime.format("h:mm A"))
                     }
                     $scope.doHours()
-                })
+                }, true)
 
                 elem.find(".selector-container h3")
                     .addClass("unselected")

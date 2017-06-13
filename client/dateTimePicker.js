@@ -8,48 +8,63 @@ angular.module('app').directive('dateTimePicker', function() {
     return {
         restrict: 'E',
         transclude: true,
-        require: 'ngModel',
+        require: ['ngModel', 'dateTimePicker'],
         template: require('./dateTimePicker.html'),
         scope: {
             sbTimeZone: "<"
         },
-        link: {
-            pre: function($scope, elem, attrs, ngModelCtrl, $transclude) {
+        controller: function($scope) {
 
-                elem.find('.content').append($transclude($scope))
+            this.sbTimeZone = $scope.sbTimeZone
+            // need to have sub-dirs access via this ctrl as opposed to
+            // via shared scope, because sub-dirs scope must be transclusion scope
+            // to accept optional beforeRender function
+
+            this.requestedDate = null
+            this.requestedTime = null
+
+            this.updateDate = function(date) {
+                this.requestedDate = moment(date)
+                $scope.$broadcast("dateSelected")
+                $scope.updateNgModel()
+            }
+
+            this.updateTime = function(time) {
+                                                //can be null, if date changed
+                                               //and prev selected time is now
+                                               //a closed time
+                if(time)
+                    this.requestedTime = moment(time)
+                else
+                    this.requestedTime = null
+                $scope.updateNgModel()
+            }
+
+        },
+        link: {
+            pre: function($scope, elem, attrs, ctrls) {
+
+                var ngModelCtrl = ctrls[0]
+                var dtCtrl = ctrls[1]
 
                 ngModelCtrl.$formatters.push(function(modelValue) {
                     if(!modelValue) {
-                        $scope.requestedDate = null
-                        $scope.requestedTime = null
+                        dtCtrl.requestedDate = null
+                        dtCtrl.requestedTime = null
                     } else {
-                        $scope.requestedDate = moment(modelValue)
-                        $scope.requestedTime = moment(modelValue)
+                        dtCtrl.requestedDate = moment(modelValue)
+                        dtCtrl.requestedTime = moment(modelValue)
                     }
-                })
-
-                $scope.$on("updateDate", function(e, date) {
-                    $scope.requestedDate = date
-                    $scope.$broadcast("dateSelected")
-                    $scope.updateNgModel()
-                })
-
-                $scope.$on("updateTime", function(e, time) {
-                                                    //can be null, if date changed
-                                                   //and prev selected time is now
-                                                   //a closed time
-                    $scope.requestedTime = time
-                    $scope.updateNgModel()
                 })
 
                 $scope.updateNgModel = function() {
                     //TODO: add check for disabled requested date/time
-                    if(!$scope.requestedDate || !$scope.requestedTime) {
+                    if(!dtCtrl.requestedDate || !dtCtrl.requestedTime) {
                         ngModelCtrl.$setViewValue(null)
                     } else {
-                        var newDatetime = moment($scope.requestedDate)
-                        newDatetime.hour($scope.requestedTime.hour())
-                        newDatetime.minute($scope.requestedTime.minute())
+                        var newDatetime = moment(dtCtrl.requestedDate)
+                        newDatetime.hour(dtCtrl.requestedTime.hour())
+                        newDatetime.minute(dtCtrl.requestedTime.minute())
                         ngModelCtrl.$setViewValue(newDatetime)
                     }
                 }
@@ -64,10 +79,10 @@ angular.module('app').directive('dateTimePicker', function() {
                         // 2: reqDate is only not null, so just update it
                         // 3: reqDate and reqTime are both not null, so update
                         //    reqDatetime which in turn updates reqDate and reqTime
-                    if($scope.requestedDate) {
-                        updateMomentToTZ($scope.requestedDate, $scope.sbTimeZone)
-                        if($scope.requestedTime) {
-                            updateMomentToTZ($scope.requestedTime, $scope.sbTimeZone)
+                    if(dtCtrl.requestedDate) {
+                        updateMomentToTZ(dtCtrl.requestedDate, $scope.sbTimeZone)
+                        if(dtCtrl.requestedTime) {
+                            updateMomentToTZ(dtCtrl.requestedTime, $scope.sbTimeZone)
                             $scope.updateNgModel()
                         }
                     }

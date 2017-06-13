@@ -7,16 +7,25 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
     return {
         restrict: 'E',
         template: require('./datePicker.html'),
-        link: function($scope, elem, attrs, ctrl) {
+        require: "^dateTimePicker",
+        scope: {
+            sbBeforeRenderDateItem: "&"
+        },
+        link: function($scope, elem, attrs, dtCtrl) {
 
-            $scope.$watch("requestedDate", function(newVal, oldVal){
-                if(newVal===null ||
-                   (typeof newVal.disabled !== "undefined"
-                    && newVal.disabled===true)) {
+            // $scope.sbBeforeRenderDateItem()
+
+            $scope.dtCtrl = dtCtrl
+            $scope.$watch("dtCtrl.requestedDate", function(newVal, oldVal){
+                if(newVal===null) {
+                    $scope.requestedDate = null
+
                     elem.find(".selector-container h3")
                         .addClass("unselected")
                         .text("Select date")
                 } else {
+                    $scope.requestedDate = moment(dtCtrl.requestedDate)
+
                     elem.find(".selector-container h3")
                         .removeClass("unselected")
                         .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
@@ -25,7 +34,7 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                 if($scope.requestedDate)
                     $scope.movingDate = moment($scope.requestedDate).date(1)
                 else
-                    $scope.movingDate = moment().tz($scope.sbTimeZone).date(1)
+                    $scope.movingDate = moment().tz(dtCtrl.sbTimeZone).date(1)
                 $scope.updateScope()
             }, true)
                //time zone change leads to sub-property changing,
@@ -35,7 +44,7 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
 
             function handleClose() {
                 if($scope.requestedDate)
-                    $scope.$emit("updateDate", $scope.requestedDate)
+                    dtCtrl.updateDate($scope.requestedDate)
             }
 
             $scope.updateScope = function() {
@@ -75,7 +84,7 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                 var date = moment($scope.movingDate)
                 while(date.day() !== 0)
                     date.subtract(1, 'd')
-                var currentMonth = moment($scope.movingDate).month()
+                var currentMonth = $scope.movingDate.month()
                 var nextMonth = moment($scope.movingDate).add(1, 'M').month()
                 $scope.weeks = []
                 while(true) {
@@ -117,12 +126,12 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
             }
 
             function isDateBeforeToday(date) {
-                if(date.year() < moment().tz($scope.sbTimeZone).year())
+                if(date.year() < moment().tz(dtCtrl.sbTimeZone).year())
                     return true
-                else if(date.year() > moment().tz($scope.sbTimeZone).year())
+                else if(date.year() > moment().tz(dtCtrl.sbTimeZone).year())
                     return false
                 else  //years are same, so compare days of year
-                    return date.dayOfYear() < moment().tz($scope.sbTimeZone).dayOfYear()
+                    return date.dayOfYear() < moment().tz(dtCtrl.sbTimeZone).dayOfYear()
             }
 
             $scope.check = function() {

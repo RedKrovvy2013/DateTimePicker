@@ -6,26 +6,32 @@ require('./dialogService')
 angular.module('app').directive('timePicker', function(dialogService) {
     return {
         restrict: 'E',
+        require: '^dateTimePicker',
         template: require('./timePicker.html'),
         link: {
-            pre: function($scope, elem, attrs, ctrl) {
+            pre: function($scope, elem, attrs, dtCtrl) {
 
-                $scope.$watch("requestedDate", function() {
-                    if($scope.requestedDate===null)
+                $scope.dtCtrl = dtCtrl
+                $scope.$watch("dtCtrl.requestedDate", function() {
+                    if(dtCtrl.requestedDate===null)
                         elem.find(".selector-container").addClass("disabled")
                     else
                         elem.find(".selector-container").removeClass("disabled")
                 })
 
-                $scope.$watch("requestedTime", function(newVal, oldVal) {
+                $scope.$watch("dtCtrl.requestedTime", function(newVal, oldVal) {
                     if(newVal===null) {
+                        $scope.requestedTime = null
+
                         elem.find(".selector-container h3")
                             .addClass("unselected")
                             .text("Select time")
                     } else {
+                        $scope.requestedTime = moment(dtCtrl.requestedTime)
+
                         elem.find(".selector-container h3")
                             .removeClass("unselected")
-                            .text($scope.requestedTime.format("h:mm A"))
+                            .text(dtCtrl.requestedTime.format("h:mm A"))
                     }
                     $scope.doHours()
                 }, true)
@@ -35,16 +41,16 @@ angular.module('app').directive('timePicker', function(dialogService) {
                     .text("Select time")
 
                 $scope.$on("dateSelected", function() {
-                    $scope.formattedDate = $scope.requestedDate.format("MMMM D, YYYY")
+                    $scope.formattedDate = dtCtrl.requestedDate.format("MMMM D, YYYY")
                     if(!$scope.requestedTime) {
                         $scope.showAM()
                     } else {
-                        $scope.requestedTime.year($scope.requestedDate.year())
-                        $scope.requestedTime.dayOfYear($scope.requestedDate.dayOfYear())
+                        $scope.requestedTime.year(dtCtrl.requestedDate.year())
+                        $scope.requestedTime.dayOfYear(dtCtrl.requestedDate.dayOfYear())
                         if(!isDuringOpenHours($scope.requestedTime))
-                            $scope.$emit("updateTime", null)
+                            dtCtrl.updateTime(null)
                         //only update view once $scope.requestedTime
-                        //is set on same year/day as $scope.requestedDate,
+                        //is set on same year/day as dtCtrl.requestedDate,
                         //so that 'active' can be determined
                         if($scope.requestedTime &&
                            $scope.requestedTime.hour() < 12) //AM
@@ -59,16 +65,16 @@ angular.module('app').directive('timePicker', function(dialogService) {
 
                 function handleClose() {
                     if($scope.requestedTime)
-                        $scope.$emit("updateTime", $scope.requestedTime)
+                        dtCtrl.updateTime($scope.requestedTime)
                 }
 
                 $scope.doHours = function() {
                     if($scope.isAM) {
                         $scope.movingTime
-                            = moment($scope.requestedDate).hour(0).minute(0)
+                            = moment(dtCtrl.requestedDate).hour(0).minute(0)
                     } else {
                         $scope.movingTime
-                            = moment($scope.requestedDate).hour(12).minute(0)
+                            = moment(dtCtrl.requestedDate).hour(12).minute(0)
                     }
                     $scope.hours = []
                     for(var i=0; i<12; ++i) {

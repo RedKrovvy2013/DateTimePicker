@@ -19,12 +19,15 @@ angular.module('app').controller('mainController', function($scope) {
 
     $scope.beforeRenderDateItem = function(date) {
         date.disabled = date.month() > 10
-        debugger
+    }
+
+    $scope.func7 = function() {
+        console.log('omega')
     }
 
     $scope.order = {
-        requestedDatetime: null,
-        // requestedDatetime: moment.tz("2013-12-18 11:55", tz),
+        // requestedDatetime: null,
+        requestedDatetime: moment.tz("2017-12-18 11:55", tz),
         timeZone: tz
     }
     $scope.check = function() {

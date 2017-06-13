@@ -15683,14 +15683,16 @@ var moment = __webpack_require__(2)
 
 __webpack_require__(3)
 
-angular.module('app').directive('datePicker', function(dialogService) {
+angular.module('app').directive('datePicker', function(dialogService, $parse) {
     return {
         restrict: 'E',
         template: __webpack_require__(129),
         link: function($scope, elem, attrs, ctrl) {
 
             $scope.$watch("requestedDate", function(newVal, oldVal){
-                if(newVal===null) {
+                if(newVal===null ||
+                   (typeof newVal.disabled !== "undefined"
+                    && newVal.disabled===true)) {
                     elem.find(".selector-container h3")
                         .addClass("unselected")
                         .text("Select date")
@@ -15724,9 +15726,19 @@ angular.module('app').directive('datePicker', function(dialogService) {
 
             $scope.selectDate = function(date) {
                 if(!isDateBeforeToday(date) &&
-                   date.month()===$scope.movingDate.month())
+                   date.month()===$scope.movingDate.month()) {
+
                         $scope.requestedDate = moment(date)
-                $scope.updateScope()
+
+                        if(typeof attrs.sbBeforeRenderDateItem !== "undefined") {
+                            // var fn = $parse(attrs.sbBeforeRenderDateItem)
+                            var fn = $parse("beforeRenderDateItem(requestedDate)")
+                            fn($scope)
+                            //will add disabled prop to requestedDate,
+                            //which is eval'd in $watch on requestedDate
+                        }
+                        $scope.updateScope()
+                }
             }
 
             $scope.prevMonth = function() {
@@ -15822,7 +15834,9 @@ angular.module('app').directive('dateTimePicker', function() {
             sbTimeZone: "<"
         },
         link: {
-            pre: function($scope, elem, attrs, ngModelCtrl) {
+            pre: function($scope, elem, attrs, ngModelCtrl, $transclude) {
+
+                elem.find('.content').append($transclude($scope))
 
                 ngModelCtrl.$formatters.push(function(modelValue) {
                     if(!modelValue) {
@@ -15849,6 +15863,7 @@ angular.module('app').directive('dateTimePicker', function() {
                 })
 
                 $scope.updateNgModel = function() {
+                    //TODO: add check for disabled requested date/time
                     if(!$scope.requestedDate || !$scope.requestedTime) {
                         ngModelCtrl.$setViewValue(null)
                     } else {
@@ -15901,27 +15916,28 @@ var moment = __webpack_require__(2)
 
 angular.module('app').controller('mainController', function($scope) {
 
-// example time zones:
-// "Australia/Melbourne"
-// "Europe/Stockholm"
-// "America/Los_Angeles"
-// "America/Chicago"
-// "America/Phoenix" -> special cuz no observe dst
-// "America/Toronto"
+    // example time zones:
+    // "Australia/Melbourne"
+    // "Europe/Stockholm"
+    // "America/Los_Angeles"
+    // "America/Chicago"
+    // "America/Phoenix" -> special cuz no observe dst
+    // "America/Toronto"
 
     const tz = "Europe/Stockholm"
 
     var tz1 = moment.tz("2017-12-18 11:55", tz)
-    // var tz1 = moment()
     // console.log(tz1.format())
     // console.log(tz1)
 
-    // console.log(moment.tz.names())
+    $scope.beforeRenderDateItem = function(date) {
+        date.disabled = date.month() > 10
+        debugger
+    }
 
     $scope.order = {
         requestedDatetime: null,
-        // requestedDatetime: moment().month(6).hour(11).minute(15),
-        // requestedDatetime: moment.tz("2013-11-18 11:55", tz),
+        // requestedDatetime: moment.tz("2013-12-18 11:55", tz),
         timeZone: tz
     }
     $scope.check = function() {
@@ -59585,7 +59601,7 @@ module.exports = "\r\n<div id=\"date-picker\">\r\n\r\n    <div class=\"selector-
 /* 130 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div>\r\n    <date-picker>\r\n    </date-picker>\r\n    <time-picker>\r\n    </time-picker>\r\n</div>\r\n"
+module.exports = "\r\n<div class=\"content\">\r\n</div>\r\n"
 
 /***/ }),
 /* 131 */

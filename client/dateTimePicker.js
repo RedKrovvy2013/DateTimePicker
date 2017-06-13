@@ -14,7 +14,9 @@ angular.module('app').directive('dateTimePicker', function() {
             sbTimeZone: "<"
         },
         link: {
-            pre: function($scope, elem, attrs, ngModelCtrl) {
+            pre: function($scope, elem, attrs, ngModelCtrl, $transclude) {
+
+                elem.find('.content').append($transclude($scope))
 
                 ngModelCtrl.$formatters.push(function(modelValue) {
                     if(!modelValue) {
@@ -41,6 +43,7 @@ angular.module('app').directive('dateTimePicker', function() {
                 })
 
                 $scope.updateNgModel = function() {
+                    //TODO: add check for disabled requested date/time
                     if(!$scope.requestedDate || !$scope.requestedTime) {
                         ngModelCtrl.$setViewValue(null)
                     } else {

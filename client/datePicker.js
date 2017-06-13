@@ -3,14 +3,16 @@ var moment = require('moment-timezone')
 
 require('./dialogService')
 
-angular.module('app').directive('datePicker', function(dialogService) {
+angular.module('app').directive('datePicker', function(dialogService, $parse) {
     return {
         restrict: 'E',
         template: require('./datePicker.html'),
         link: function($scope, elem, attrs, ctrl) {
 
             $scope.$watch("requestedDate", function(newVal, oldVal){
-                if(newVal===null) {
+                if(newVal===null ||
+                   (typeof newVal.disabled !== "undefined"
+                    && newVal.disabled===true)) {
                     elem.find(".selector-container h3")
                         .addClass("unselected")
                         .text("Select date")
@@ -44,9 +46,19 @@ angular.module('app').directive('datePicker', function(dialogService) {
 
             $scope.selectDate = function(date) {
                 if(!isDateBeforeToday(date) &&
-                   date.month()===$scope.movingDate.month())
+                   date.month()===$scope.movingDate.month()) {
+
                         $scope.requestedDate = moment(date)
-                $scope.updateScope()
+
+                        if(typeof attrs.sbBeforeRenderDateItem !== "undefined") {
+                            // var fn = $parse(attrs.sbBeforeRenderDateItem)
+                            var fn = $parse("beforeRenderDateItem(requestedDate)")
+                            fn($scope)
+                            //will add disabled prop to requestedDate,
+                            //which is eval'd in $watch on requestedDate
+                        }
+                        $scope.updateScope()
+                }
             }
 
             $scope.prevMonth = function() {

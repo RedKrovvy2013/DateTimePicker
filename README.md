@@ -12,7 +12,7 @@ https://nodejs.org/en/download/
 
 `webpack`
 
-`node start`
+`node ./server/server`
 
 In browser, to see DateTimePicker, go to:
 http://localhost:3000

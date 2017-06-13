@@ -13,9 +13,6 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
         },
         link: function($scope, elem, attrs, dtCtrl) {
 
-            //TODO: handle case where dtCtrl's requestedDate is out of bounds
-            //      because of beforeRender disablement
-
             dialogService.setUp(elem)
 
             $scope.dtCtrl = dtCtrl
@@ -32,16 +29,20 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                         .text("Select date")
                 } else {
 
-                    if(typeof dtCtrl.requestedDate.disabled !== "undefined" &&
-                       dtCtrl.requestedDate.disabled === true)
-                            $scope.disabled = true
+                    if(typeof dtCtrl.requestedDate.disabled !== "undefined")
+                        $scope.disabled = dtCtrl.requestedDate.disabled
 
                     $scope.movingDate = moment(dtCtrl.requestedDate).date(1)
 
-                    if(!$scope.disabled)
+                    if(!$scope.disabled) {
                         elem.find(".selector-container h3")
                             .removeClass("unselected")
                             .text(dtCtrl.requestedDate.format("dddd, MMMM Do, YYYY"))
+                    } else {
+                        elem.find(".selector-container h3")
+                            .addClass("unselected")
+                            .text("Select date")
+                    }
                 }
 
                 $scope.updateScope()

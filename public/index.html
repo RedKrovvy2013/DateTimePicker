@@ -15,9 +15,11 @@
             <date-time-picker ng-model="order.requestedDatetime"
                               sb-time-zone="order.timeZone">
                   <date-picker sb-before-render-date-item="beforeRenderDateItem(requestedDate)">
+                  <!-- <date-picker> -->
                   </date-picker>
-                  <!-- <time-picker sb-before-render-date-item="beforeRenderTimeItem(requestedTime)">
-                  </time-picker> -->
+                  <time-picker sb-before-render-time-item="beforeRenderTimeItem(requestedTime)">
+                  <!-- <time-picker> -->
+                  </time-picker>
             </date-time-picker>
 
             <div class="check-btns-container">

@@ -1,4 +1,9 @@
 
+## DateTime Picker
+
+### Screen Recording
+
+<img src="http://i.imgur.com/aOrMZIa.gif" />
 
 Install Node
 https://nodejs.org/en/download/
@@ -9,5 +14,5 @@ https://nodejs.org/en/download/
 
 `node start`
 
-In browser, to see DatetimePicker, go to:
+In browser, to see DateTimePicker, go to:
 http://localhost:3000

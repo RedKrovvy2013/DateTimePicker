@@ -17,7 +17,6 @@ angular.module('app').service('dialogService', function() {
             elem.find(".dialog").addClass('hidden')
             elem.find(".fullscreen").addClass('hidden')
             elem.find(".selector-container").removeClass('active')
-            onClose()
         })
     }
 

@@ -25,6 +25,8 @@ angular.module('app').directive('dateTimePicker', function() {
 
             this.updateDate = function(date) {
                 this.requestedDate = moment(date)
+                if(typeof date.disabled !== "undefined")
+                    this.requestedDate.disabled = date.disabled
                 $scope.$broadcast("dateSelected")
                 $scope.updateNgModel()
             }
@@ -58,15 +60,22 @@ angular.module('app').directive('dateTimePicker', function() {
                 })
 
                 $scope.updateNgModel = function() {
-                    //TODO: add check for disabled requested date/time
+                    //TODO: add check for disabled requested time
                     if(!dtCtrl.requestedDate || !dtCtrl.requestedTime) {
                         ngModelCtrl.$setViewValue(null)
-                    } else {
-                        var newDatetime = moment(dtCtrl.requestedDate)
-                        newDatetime.hour(dtCtrl.requestedTime.hour())
-                        newDatetime.minute(dtCtrl.requestedTime.minute())
-                        ngModelCtrl.$setViewValue(newDatetime)
+                        return
                     }
+
+                    if(typeof dtCtrl.requestedDate.disabled !== "undefined" &&
+                       dtCtrl.requestedDate.disabled === true) {
+                           ngModelCtrl.$setViewValue(null)
+                           return
+                       }
+
+                    var newDatetime = moment(dtCtrl.requestedDate)
+                    newDatetime.hour(dtCtrl.requestedTime.hour())
+                    newDatetime.minute(dtCtrl.requestedTime.minute())
+                    ngModelCtrl.$setViewValue(newDatetime)
                 }
 
                 ngModelCtrl.$parsers.push(function(viewValue) {

@@ -4575,7 +4575,6 @@ angular.module('app').service('dialogService', function() {
             elem.find(".dialog").addClass('hidden')
             elem.find(".fullscreen").addClass('hidden')
             elem.find(".selector-container").removeClass('active')
-            onClose()
         })
     }
 
@@ -15689,43 +15688,45 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
         template: __webpack_require__(129),
         require: "^dateTimePicker",
         scope: {
-            sbBeforeRenderDateItem: "&"
+            sbBeforeRenderDateItem: "&?"
         },
         link: function($scope, elem, attrs, dtCtrl) {
 
-            // $scope.sbBeforeRenderDateItem()
+            //TODO: handle case where dtCtrl's requestedDate is out of bounds
+            //      because of beforeRender disablement
+
+            dialogService.setUp(elem)
 
             $scope.dtCtrl = dtCtrl
             $scope.$watch("dtCtrl.requestedDate", function(newVal, oldVal){
-                if(newVal===null) {
-                    $scope.requestedDate = null
+
+                $scope.disabled = false
+
+                if(dtCtrl.requestedDate===null) {
+
+                    $scope.movingDate = moment().tz(dtCtrl.sbTimeZone).date(1)
 
                     elem.find(".selector-container h3")
                         .addClass("unselected")
                         .text("Select date")
                 } else {
-                    $scope.requestedDate = moment(dtCtrl.requestedDate)
 
-                    elem.find(".selector-container h3")
-                        .removeClass("unselected")
-                        .text($scope.requestedDate.format("dddd, MMMM Do, YYYY"))
+                    if(typeof dtCtrl.requestedDate.disabled !== "undefined" &&
+                       dtCtrl.requestedDate.disabled === true)
+                            $scope.disabled = true
+
+                    $scope.movingDate = moment(dtCtrl.requestedDate).date(1)
+
+                    if(!$scope.disabled)
+                        elem.find(".selector-container h3")
+                            .removeClass("unselected")
+                            .text(dtCtrl.requestedDate.format("dddd, MMMM Do, YYYY"))
                 }
 
-                if($scope.requestedDate)
-                    $scope.movingDate = moment($scope.requestedDate).date(1)
-                else
-                    $scope.movingDate = moment().tz(dtCtrl.sbTimeZone).date(1)
                 $scope.updateScope()
             }, true)
                //time zone change leads to sub-property changing,
                //so must do $watch will full comparison to see change and update
-
-            dialogService.setUp(elem, handleClose)
-
-            function handleClose() {
-                if($scope.requestedDate)
-                    dtCtrl.updateDate($scope.requestedDate)
-            }
 
             $scope.updateScope = function() {
                 $scope.year = $scope.movingDate.format('YYYY')
@@ -15737,16 +15738,16 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                 if(!isDateBeforeToday(date) &&
                    date.month()===$scope.movingDate.month()) {
 
-                        $scope.requestedDate = moment(date)
-
-                        if(typeof attrs.sbBeforeRenderDateItem !== "undefined") {
-                            // var fn = $parse(attrs.sbBeforeRenderDateItem)
-                            var fn = $parse("beforeRenderDateItem(requestedDate)")
-                            fn($scope)
-                            //will add disabled prop to requestedDate,
-                            //which is eval'd in $watch on requestedDate
+                        if(typeof $scope.sbBeforeRenderDateItem !== "undefined") {
+                            $scope.sbBeforeRenderDateItem({
+                                requestedDate: date})
+                            //will add disabled prop to date..
                         }
-                        $scope.updateScope()
+
+                        dtCtrl.updateDate(date)
+                        //updates dtCtrl.requestedDate,
+                        //which fires $watch and evals disabled,
+                        //and updates view
                 }
             }
 
@@ -15776,11 +15777,11 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                             date: moment(date),
                             dayOfMonth: date.date(),
                             active: (function() {
-                                if(!$scope.requestedDate) {
+                                if(!dtCtrl.requestedDate || $scope.disabled) {
                                     return false
                                 } else {
-                                    return $scope.requestedDate.year() === date.year() &&
-                                           $scope.requestedDate.dayOfYear() === date.dayOfYear()
+                                    return dtCtrl.requestedDate.year() === date.year() &&
+                                           dtCtrl.requestedDate.dayOfYear() === date.dayOfYear()
                                 }
                             })(),
                             inPast: isDateBeforeToday(date),
@@ -15854,6 +15855,8 @@ angular.module('app').directive('dateTimePicker', function() {
 
             this.updateDate = function(date) {
                 this.requestedDate = moment(date)
+                if(typeof date.disabled !== "undefined")
+                    this.requestedDate.disabled = date.disabled
                 $scope.$broadcast("dateSelected")
                 $scope.updateNgModel()
             }
@@ -15887,15 +15890,22 @@ angular.module('app').directive('dateTimePicker', function() {
                 })
 
                 $scope.updateNgModel = function() {
-                    //TODO: add check for disabled requested date/time
+                    //TODO: add check for disabled requested time
                     if(!dtCtrl.requestedDate || !dtCtrl.requestedTime) {
                         ngModelCtrl.$setViewValue(null)
-                    } else {
-                        var newDatetime = moment(dtCtrl.requestedDate)
-                        newDatetime.hour(dtCtrl.requestedTime.hour())
-                        newDatetime.minute(dtCtrl.requestedTime.minute())
-                        ngModelCtrl.$setViewValue(newDatetime)
+                        return
                     }
+
+                    if(typeof dtCtrl.requestedDate.disabled !== "undefined" &&
+                       dtCtrl.requestedDate.disabled === true) {
+                           ngModelCtrl.$setViewValue(null)
+                           return
+                       }
+
+                    var newDatetime = moment(dtCtrl.requestedDate)
+                    newDatetime.hour(dtCtrl.requestedTime.hour())
+                    newDatetime.minute(dtCtrl.requestedTime.minute())
+                    ngModelCtrl.$setViewValue(newDatetime)
                 }
 
                 ngModelCtrl.$parsers.push(function(viewValue) {
@@ -15956,6 +15966,11 @@ angular.module('app').controller('mainController', function($scope) {
 
     $scope.beforeRenderDateItem = function(date) {
         date.disabled = date.month() > 10
+    }
+
+    $scope.beforeRenderTimeItem = function(time) {
+        time.disabled = (time.hour() > 12 && time.hour() < 13)
+                                    //lunchtime!
     }
 
     $scope.func7 = function() {

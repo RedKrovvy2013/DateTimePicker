@@ -21,6 +21,11 @@ angular.module('app').controller('mainController', function($scope) {
         date.disabled = date.month() > 10
     }
 
+    $scope.beforeRenderTimeItem = function(time) {
+        time.disabled = (time.hour() > 12 && time.hour() < 13)
+                                    //lunchtime!
+    }
+
     $scope.func7 = function() {
         console.log('omega')
     }

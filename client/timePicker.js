@@ -55,10 +55,6 @@ angular.module('app').directive('timePicker', function(dialogService) {
                     $scope.doHours()
                 }, true)
 
-                // elem.find(".selector-container h3")
-                //     .addClass("unselected")
-                //     .text("Select time")
-
                 $scope.$on("dateSelected", function() {
                     $scope.formattedDate = dtCtrl.requestedDate.format("MMMM D, YYYY")
                     if(!$scope.requestedTime) {

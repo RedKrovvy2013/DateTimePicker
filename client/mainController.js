@@ -27,8 +27,8 @@ angular.module('app').controller('mainController', function($scope) {
     }
 
     $scope.order = {
-        // requestedDatetime: null,
-        requestedDatetime: moment.tz("2017-08-18 10:30", tz),
+        requestedDatetime: null,
+        // requestedDatetime: moment.tz("2017-08-18 10:30", tz),
         timeZone: tz
     }
     $scope.check = function() {

@@ -15991,8 +15991,8 @@ angular.module('app').controller('mainController', function($scope) {
     }
 
     $scope.order = {
-        // requestedDatetime: null,
-        requestedDatetime: moment.tz("2017-08-18 10:30", tz),
+        requestedDatetime: null,
+        // requestedDatetime: moment.tz("2017-08-18 10:30", tz),
         timeZone: tz
     }
     $scope.check = function() {
@@ -16065,10 +16065,6 @@ angular.module('app').directive('timePicker', function(dialogService) {
                     }
                     $scope.doHours()
                 }, true)
-
-                // elem.find(".selector-container h3")
-                //     .addClass("unselected")
-                //     .text("Select time")
 
                 $scope.$on("dateSelected", function() {
                     $scope.formattedDate = dtCtrl.requestedDate.format("MMMM D, YYYY")

@@ -1,0 +1,41 @@
+<date-picker sb-before-render-item=“beforeRenderDateItem”><date-picker/>
+
+In the controller I define the logic for beforeRenderDateItem:
+
+function beforeRenderDateItem(day) {
+  day.disabled = day.date.getDay() > 3;
+}
+
+The "day.disabled = day.date.getDay() > 3;” is part of business logic. It definitely does not belong to the date time picker directive.
+
+I should be able to disable/enable date and time options based on a complex business logic of the application, without updating a single line of the date/time picker directive.
+
+Pavel.
+
+==============================
+=============TEST=============
+==============================
+
+Implement a “Date and Time picker” directive with a timezone support using AngularJS. You may use any 3rd party libraries (Moment.js for example). The directive should consist of 2 sub-directives: Date input and Time input. Both inputs should be binded to the single model property. Time selector should be disabled if Date is not chosen.
+
+Both sub-directives should accept OPTIONAL “sb-before-render-item” function. This function accepts date/time object, which has “disabled” attribute. Function may update that attribute (true/false) to disable/enable the date or time.
+
+More info:
+“ng-model” value should be updated only when both Date and Time chosen.
+If both Date and Time selected, and then user updates date to a value which invalidates selected time, the selected time should be unset, and ng-model should be updated to null. For example: working hours for weekdays are 7AM-8PM, and for weekends - 10AM-4PM. If user select Friday 8AM, and then updates Day to Sunday, previously selected time should become unset.
+sbTimeZone should be one way binded. When time zone changes, the selected time and date should persist to what they were before. For example if currently selected Date/Time is 10/26/2016 10:15AM PDT and time zone is changed to “America/New_York” (EST), the new selected date/time should be 10/26/2016 10:15AM EST.
+Date/Time select may be initialized with ng-model=null as well as already predefined date/time. If date/time predefined, it should be rendered within time zone according to sbTimeZone attribute, and date in calendar as well as time in time slots view should be selected/activated.
+
+Markup example:
+
+JS:
+order = {
+  requestedDatetime: null,
+  timeZone: ‘America/Los_Angeles'
+}
+
+HTML:
+<date-time-picker ng-model=“order.requestedDatetime” sb-time-zone=“order.timeZone” required=“true”>
+  <date-picker sb-before-render-item=“beforeRenderDateItem”><date-picker/>
+  <time-picker sb-before-render-item=“beforeRenderTimeItem”><time-picker/>
+</date-time-picker>

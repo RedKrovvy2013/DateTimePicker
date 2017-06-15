@@ -1,5 +1,6 @@
 var angular = require('angular')
 var moment = require('moment-timezone')
+var _ = require('lodash')
 
 require('./dialogService')
 
@@ -18,8 +19,6 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
             $scope.dtCtrl = dtCtrl
             $scope.$watch("dtCtrl.requestedDate", function(newVal, oldVal){
 
-                $scope.disabled = false
-
                 if(dtCtrl.requestedDate===null) {
 
                     $scope.movingDate = moment().tz(dtCtrl.sbTimeZone).date(1)
@@ -29,20 +28,11 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                         .text("Select date")
                 } else {
 
-                    if(typeof dtCtrl.requestedDate.disabled !== "undefined")
-                        $scope.disabled = dtCtrl.requestedDate.disabled
-
                     $scope.movingDate = moment(dtCtrl.requestedDate).date(1)
 
-                    if(!$scope.disabled) {
-                        elem.find(".selector-container h3")
-                            .removeClass("unselected")
-                            .text(dtCtrl.requestedDate.format("dddd, MMMM Do, YYYY"))
-                    } else {
-                        elem.find(".selector-container h3")
-                            .addClass("unselected")
-                            .text("Select date")
-                    }
+                    elem.find(".selector-container h3")
+                        .removeClass("unselected")
+                        .text(dtCtrl.requestedDate.format("dddd, MMMM Do, YYYY"))
                 }
 
                 $scope.updateScope()
@@ -57,19 +47,11 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
             }
 
             $scope.selectDate = function(date) {
-                if(!isDateBeforeToday(date) &&
+                if(!date.disabled &&
                    date.month()===$scope.movingDate.month()) {
-
-                        if(typeof $scope.sbBeforeRenderDateItem !== "undefined") {
-                            $scope.sbBeforeRenderDateItem({
-                                requestedDate: date})
-                            //will add disabled prop to date..
-                        }
-
                         dtCtrl.updateDate(date)
                         //updates dtCtrl.requestedDate,
-                        //which fires $watch and evals disabled,
-                        //and updates view
+                        //which fires $watch and updates view
                 }
             }
 
@@ -85,6 +67,8 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
 
             $scope.doWeeks = function() {
                 var date = moment($scope.movingDate)
+                date.disabled = false
+
                 while(date.day() !== 0)
                     date.subtract(1, 'd')
                 var currentMonth = $scope.movingDate.month()
@@ -94,21 +78,27 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                     if(date.month() === nextMonth && date.day() === 0)
                         break
                     var week = []
-                    for(var i=0; i<7; ++i) {
+                    for(var i=0; i<7; ++i, date.add(1, 'd')) {
+                        if(typeof $scope.sbBeforeRenderDateItem !== "undefined") {
+                            $scope.sbBeforeRenderDateItem({dateItem: date})
+                            //reassigns date.disabled
+                        }
                         week.push({
-                            date: moment(date),
+                            date: _.cloneDeep(date),
+                            //must cloneDeep() as opposed to moment() copy
+                            //to carry over added disabled property
                             dayOfMonth: date.date(),
                             active: (function() {
-                                if(!dtCtrl.requestedDate || $scope.disabled) {
+                                if(!dtCtrl.requestedDate) {
                                     return false
                                 } else {
                                     return dtCtrl.requestedDate.year() === date.year() &&
                                            dtCtrl.requestedDate.dayOfYear() === date.dayOfYear()
                                 }
                             })(),
-                            inPast: isDateBeforeToday(date),
+                            disabled: date.disabled,
                             selectable: (function() {
-                                if(isDateBeforeToday(date))
+                                if(date.disabled)
                                     return false
                                 else if(date.month()===nextMonth)
                                     return false
@@ -122,19 +112,9 @@ angular.module('app').directive('datePicker', function(dialogService, $parse) {
                                     return false
                             })()
                         })
-                        date.add(1, 'd')
                     }
                     $scope.weeks.push(week)
                 }
-            }
-
-            function isDateBeforeToday(date) {
-                if(date.year() < moment().tz(dtCtrl.sbTimeZone).year())
-                    return true
-                else if(date.year() > moment().tz(dtCtrl.sbTimeZone).year())
-                    return false
-                else  //years are same, so compare days of year
-                    return date.dayOfYear() < moment().tz(dtCtrl.sbTimeZone).dayOfYear()
             }
 
             $scope.check = function() {

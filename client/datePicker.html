@@ -42,7 +42,7 @@
                             <td ng-repeat="day in week"
                                 ng-click="selectDate(day.date)"
                                 ng-class="{ 'selectable': day.selectable,
-                                            'in-past': day.inPast,
+                                            'disabled': day.disabled,
                                             'not-this-month': day.notThisMonth,
                                             'active': day.active }">
                                 <p>{{day.dayOfMonth}}<p>

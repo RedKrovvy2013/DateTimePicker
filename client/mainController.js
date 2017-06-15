@@ -17,13 +17,33 @@ angular.module('app').controller('mainController', function($scope) {
     // console.log(tz1.format())
     // console.log(tz1)
 
-    $scope.beforeRenderDateItem = function(date) {
-        date.disabled = date.month() > 10
+    $scope.beforeRenderTimeItem = function(time) {
+        time.disabled = (function() {
+            if( time.day() === 0 ||
+                time.day() === 6 ) { //weekend
+                    if(time.hour() >= 10 &&
+                       time.hour() < 16)
+                          return false
+                    else
+                          return true
+            } else { //weekday
+                    if(time.hour() >= 7 &&
+                       time.hour() < 20)
+                          return false
+                    else
+                          return true
+            }
+        })()
     }
 
-    $scope.beforeRenderTimeItem = function(time) {
-        time.disabled = (time.hour() === 12)
-                            //lunchtime!
+    $scope.beforeRenderDateItem = function(date) {
+        var timeZone = date._z.name
+        if(date.year() < moment().tz(timeZone).year())
+            date.disabled = true
+        else if(date.year() > moment().tz(timeZone).year())
+            date.disabled = false
+        else //years are same, so compare days of year
+            date.disabled = date.dayOfYear() < moment().tz(timeZone).dayOfYear()
     }
 
     $scope.order = {

@@ -1,5 +1,6 @@
 var angular = require('angular')
 var moment = require('moment-timezone')
+var _ = require('lodash')
 
 require('./dialogService')
 
@@ -18,17 +19,13 @@ angular.module('app').directive('timePicker', function(dialogService) {
 
                 $scope.dtCtrl = dtCtrl
                 $scope.$watch("dtCtrl.requestedDate", function() {
-                    if(dtCtrl.requestedDate===null ||
-                       (typeof dtCtrl.requestedDate.disabled !== "undefined"
-                        && dtCtrl.requestedDate.disabled === true))
+                    if(dtCtrl.requestedDate===null)
                         elem.find(".selector-container").addClass("disabled")
                     else
                         elem.find(".selector-container").removeClass("disabled")
                 })
 
                 $scope.$watch("dtCtrl.requestedTime", function(newVal, oldVal) {
-
-                    $scope.disabled = false
 
                     if(newVal===null) {
                         $scope.requestedTime = null
@@ -38,19 +35,11 @@ angular.module('app').directive('timePicker', function(dialogService) {
                             .text("Select time")
                     } else {
                         $scope.requestedTime = moment(dtCtrl.requestedTime)
+                        $scope.requestedTime.disabled = false
 
-                        if(typeof dtCtrl.requestedTime.disabled !== "undefined")
-                            $scope.disabled = dtCtrl.requestedTime.disabled
-
-                        if(!$scope.disabled) {
-                            elem.find(".selector-container h3")
-                                .removeClass("unselected")
-                                .text(dtCtrl.requestedTime.format("h:mm A"))
-                        } else {
-                            elem.find(".selector-container h3")
-                                .addClass("unselected")
-                                .text("Select time")
-                        }
+                        elem.find(".selector-container h3")
+                            .removeClass("unselected")
+                            .text(dtCtrl.requestedTime.format("h:mm A"))
                     }
                     $scope.doHours()
                 }, true)
@@ -62,13 +51,17 @@ angular.module('app').directive('timePicker', function(dialogService) {
                     } else {
                         $scope.requestedTime.year(dtCtrl.requestedDate.year())
                         $scope.requestedTime.dayOfYear(dtCtrl.requestedDate.dayOfYear())
-                        if(!isDuringOpenHours($scope.requestedTime))
+
+                        if(typeof $scope.sbBeforeRenderTimeItem !== "undefined")
+                            $scope.sbBeforeRenderTimeItem(
+                                {timeItem: $scope.requestedTime})
+
+                        if($scope.requestedTime.disabled)
                             dtCtrl.updateTime(null)
                         //only update view once $scope.requestedTime
                         //is set on same year/day as dtCtrl.requestedDate,
                         //so that 'active' can be determined
-                        if($scope.requestedTime &&
-                           $scope.requestedTime.hour() < 12) //AM
+                        if($scope.requestedTime.hour() < 12) //AM
                             $scope.showAM()
                         else
                             $scope.showPM()
@@ -83,42 +76,40 @@ angular.module('app').directive('timePicker', function(dialogService) {
                         $scope.movingTime
                             = moment(dtCtrl.requestedDate).hour(12).minute(0)
                     }
+                    $scope.movingTime.disabled = false
                     $scope.hours = []
                     for(var i=0; i<12; ++i) {
                         var hour = []
-                        for(var j=0; j<4; ++j) {
+                        for(var j=0; j<4; ++j, $scope.movingTime.add(15, 'm')) {
+
+                            if(typeof $scope.sbBeforeRenderTimeItem !== "undefined") {
+                                $scope.sbBeforeRenderTimeItem({timeItem: $scope.movingTime})
+                            }
+
                             hour.push({
-                                time: moment($scope.movingTime),
+                                time: _.cloneDeep($scope.movingTime),
+                                //cloneDeep() to carry over the disabled prop
                                 formattedTime: $scope.movingTime.format("hh:mm A"),
-                                selectable: isDuringOpenHours($scope.movingTime),
+                                selectable: !$scope.movingTime.disabled,
                                 active: (function() {
-                                    if(!$scope.requestedTime || $scope.disabled) {
+                                    if(!$scope.requestedTime) {
                                         return false
                                     } else {
                                         return $scope.movingTime.isSame($scope.requestedTime)
-                                               && isDuringOpenHours($scope.movingTime)
+                                               && !$scope.movingTime.disabled
                                     }
                                 })()
                             })
-                            $scope.movingTime.add(15, 'm')
                         }
                         $scope.hours.push(hour)
                     }
                 }
 
-                $scope.selectTime = function(time, selectable) {
-                    if(selectable) {
-                        if(typeof $scope.sbBeforeRenderTimeItem !== "undefined") {
-                            $scope.sbBeforeRenderTimeItem({
-                                requestedTime: time})
-                            //will add disabled prop to time..
-                            // debugger
-                        }
-
+                $scope.selectTime = function(time) {
+                    if(!time.disabled) {
                         dtCtrl.updateTime(time)
                         //updates dtCtrl.requestedTime,
-                        //which fires $watch and evals disabled,
-                        //and updates view
+                        //which fires $watch and updates view
                     }
                 }
 
@@ -130,23 +121,6 @@ angular.module('app').directive('timePicker', function(dialogService) {
                 $scope.showPM = function() {
                     $scope.isAM = false
                     $scope.doHours()
-                }
-
-                function isDuringOpenHours(time) {
-                    if( time.day() === 0 ||
-                        time.day() === 6 ) { //weekend
-                            if(time.hour() >= 10 &&
-                               time.hour() < 16)
-                                  return true
-                            else
-                                  return false
-                    } else { //weekday
-                            if(time.hour() >= 7 &&
-                               time.hour() < 20)
-                                  return true
-                            else
-                                  return false
-                    }
                 }
 
             },

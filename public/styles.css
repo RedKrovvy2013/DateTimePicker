@@ -128,8 +128,8 @@ td.selected-container {
     text-align: center;
 }
 
-#date-picker tr.week td.in-past,
-#date-picker tr.week td.in-past.not-this-month,
+#date-picker tr.week td.disabled,
+#date-picker tr.week td.disabled.not-this-month,
 #time-picker tr.hour td {
     color: #e0e0e0;
 }

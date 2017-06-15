@@ -4563,18 +4563,20 @@ angular.module('app').service('dialogService', function() {
     this.setUp = function(elem, onClose) {
 
         elem.find(".selector-container").click(function(e) {
+            console.log('selector clicked')
             e.stopPropagation()
             if(!elem.find(".selector-container").hasClass("disabled")) {
                 elem.find(".dialog").removeClass('hidden')
                 elem.find(".fullscreen").removeClass('hidden')
-                elem.find(".selector-container").addClass('active')
+                elem.find(".selector").addClass('active')
             }
         })
 
         elem.find(".fullscreen").click(function() {
+            console.log('fullscreen click')
             elem.find(".dialog").addClass('hidden')
             elem.find(".fullscreen").addClass('hidden')
-            elem.find(".selector-container").removeClass('active')
+            elem.find(".selector").removeClass('active')
         })
     }
 
@@ -59622,7 +59624,7 @@ webpackContext.id = 128;
 /* 129 */
 /***/ (function(module, exports) {
 
-module.exports = "\r\n<div id=\"date-picker\">\r\n\r\n    <div class=\"selector-container\">\r\n\r\n        <table class=\"selector\">\r\n            <tr>\r\n                <td class=\"icon-container\">\r\n                    <img class=\"icon\" src=\"images/calendar.png\" />\r\n                </td>\r\n                <td class=\"selected-container\">\r\n                    <h3 class=\"selected-date unselected\">Select date</h3>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n        <table class=\"dialog hidden\">\r\n\r\n            <tr>\r\n                <td class=\"month-nav-container\" ng-click=\"prevMonth()\">\r\n                    <img src=\"images/left_arrow.png\" />\r\n                </td>\r\n                <td>\r\n                    <table class=\"weeks\">\r\n                        <tr class=\"header\">\r\n                            <td colspan=\"7\">\r\n                                <h2>\r\n                                    {{month}}, {{year}}\r\n                                </h2>\r\n                            </td>\r\n                        </tr>\r\n                        <tr class=\"subheader\">\r\n                            <td><h4>SU</h4></td>\r\n                            <td><h4>MO</h4></td>\r\n                            <td><h4>TU</h4></td>\r\n                            <td><h4>WE</h4></td>\r\n                            <td><h4>TH</h4></td>\r\n                            <td><h4>FR</h4></td>\r\n                            <td><h4>SA</h4></td>\r\n                        </tr>\r\n                        <tr class=\"week\" ng-repeat=\"week in weeks\">\r\n                            <td ng-repeat=\"day in week\"\r\n                                ng-click=\"selectDate(day.date)\"\r\n                                ng-class=\"{ 'selectable': day.selectable,\r\n                                            'disabled': day.disabled,\r\n                                            'not-this-month': day.notThisMonth,\r\n                                            'active': day.active }\">\r\n                                <p>{{day.dayOfMonth}}<p>\r\n                            </td>\r\n                        </tr>\r\n                    </table>\r\n                </td>\r\n                <td class=\"month-nav-container\" ng-click=\"nextMonth()\">\r\n                    <img src=\"images/right_arrow.png\" />\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n    </div>\r\n\r\n    <!-- <button ng-click=\"check()\">\r\n        Check Requested Date\r\n    </button> -->\r\n\r\n    <div class=\"fullscreen hidden\">\r\n    </div>\r\n\r\n</div>\r\n"
+module.exports = "\r\n<div id=\"date-picker\">\r\n\r\n    <div class=\"selector-container\">\r\n\r\n        <table class=\"selector\">\r\n            <tr>\r\n                <td class=\"icon-container\">\r\n                    <img class=\"icon\" src=\"images/calendar.png\" />\r\n                </td>\r\n                <td class=\"selected-container\">\r\n                    <h3 class=\"selected-date unselected\">Select date</h3>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n        <table class=\"dialog\">\r\n\r\n            <tr>\r\n                <td class=\"month-nav-container\" ng-click=\"prevMonth()\">\r\n                    <img src=\"images/left_arrow.png\" />\r\n                </td>\r\n                <td>\r\n                    <h2>\r\n                        {{month}}, {{year}}\r\n                    </h2>\r\n                    <table class=\"weeks\">\r\n                        <tr class=\"subheader\">\r\n                            <td><h4>SU</h4></td>\r\n                            <td><h4>MO</h4></td>\r\n                            <td><h4>TU</h4></td>\r\n                            <td><h4>WE</h4></td>\r\n                            <td><h4>TH</h4></td>\r\n                            <td><h4>FR</h4></td>\r\n                            <td><h4>SA</h4></td>\r\n                        </tr>\r\n                        <tr class=\"week\" ng-repeat=\"week in weeks\">\r\n                            <td ng-repeat=\"day in week\"\r\n                                ng-click=\"selectDate(day.date)\"\r\n                                ng-class=\"{ 'selectable': day.selectable,\r\n                                            'disabled': day.disabled,\r\n                                            'not-this-month': day.notThisMonth,\r\n                                            'active': day.active }\">\r\n                                <p>{{day.dayOfMonth}}<p>\r\n                            </td>\r\n                        </tr>\r\n                    </table>\r\n                </td>\r\n                <td class=\"month-nav-container\" ng-click=\"nextMonth()\">\r\n                    <img src=\"images/right_arrow.png\" />\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n    </div>\r\n\r\n    <!-- <button ng-click=\"check()\">\r\n        Check Requested Date\r\n    </button> -->\r\n\r\n    <div class=\"fullscreen hidden\">\r\n    </div>\r\n\r\n</div>\r\n"
 
 /***/ }),
 /* 130 */

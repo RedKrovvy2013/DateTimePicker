@@ -14,21 +14,17 @@
             </tr>
         </table>
 
-        <table class="dialog hidden">
+        <table class="dialog">
 
             <tr>
                 <td class="month-nav-container" ng-click="prevMonth()">
                     <img src="images/left_arrow.png" />
                 </td>
                 <td>
+                    <h2>
+                        {{month}}, {{year}}
+                    </h2>
                     <table class="weeks">
-                        <tr class="header">
-                            <td colspan="7">
-                                <h2>
-                                    {{month}}, {{year}}
-                                </h2>
-                            </td>
-                        </tr>
                         <tr class="subheader">
                             <td><h4>SU</h4></td>
                             <td><h4>MO</h4></td>

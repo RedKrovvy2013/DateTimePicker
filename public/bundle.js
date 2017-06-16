@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 135);
+/******/ 	return __webpack_require__(__webpack_require__.s = 134);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -4558,12 +4558,16 @@ moment.tz.load(__webpack_require__(128));
 
 var angular = __webpack_require__(1)
 
-angular.module('app').service('dialogService', function() {
+angular.module('app').service('dialogService', function($document) {
 
     this.setUp = function(elem, onClose) {
 
         elem.find(".selector-container").click(function(e) {
             e.stopPropagation()
+            $document.find(".dialog").addClass('hidden')
+            $document.find(".fullscreen").addClass('hidden')
+            $document.find(".selector").removeClass('active')
+            //above stops case of opening both dialogs at once
             if(!elem.find(".selector-container").hasClass("disabled")) {
                 elem.find(".dialog").removeClass('hidden')
                 elem.find(".fullscreen").removeClass('hidden')
@@ -21671,7 +21675,7 @@ angular.module('app').service('dialogService', function() {
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(134), __webpack_require__(120)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(133), __webpack_require__(120)(module)))
 
 /***/ }),
 /* 5 */
@@ -33115,7 +33119,7 @@ angular.module('app').directive('timePicker', function(dialogService) {
     return {
         restrict: 'E',
         require: '^dateTimePicker',
-        template: __webpack_require__(133),
+        template: __webpack_require__(132),
         scope: {
             sbBeforeRenderTimeItem: '&?'
         },
@@ -76745,14 +76749,13 @@ webpackContext.id = 130;
 module.exports = "\r\n<div id=\"date-picker\">\r\n\r\n    <div class=\"selector-container\">\r\n\r\n        <table class=\"selector\">\r\n            <tr>\r\n                <td class=\"icon-container\">\r\n                    <img class=\"icon\" src=\"images/calendar.png\" />\r\n                </td>\r\n                <td class=\"selected-container\">\r\n                    <h3 class=\"selected-date unselected\">Select date</h3>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n        <table class=\"dialog hidden\">\r\n\r\n            <tr>\r\n                <td class=\"month-nav-container\" ng-click=\"prevMonth()\">\r\n                    <img src=\"images/left_arrow.png\" />\r\n                </td>\r\n                <td>\r\n                    <h2>\r\n                        {{month}}, {{year}}\r\n                    </h2>\r\n                    <table class=\"weeks\">\r\n                        <tr class=\"subheader\">\r\n                            <td><h4>SU</h4></td>\r\n                            <td><h4>MO</h4></td>\r\n                            <td><h4>TU</h4></td>\r\n                            <td><h4>WE</h4></td>\r\n                            <td><h4>TH</h4></td>\r\n                            <td><h4>FR</h4></td>\r\n                            <td><h4>SA</h4></td>\r\n                        </tr>\r\n                        <tr class=\"week\" ng-repeat=\"week in weeks\">\r\n                            <td ng-repeat=\"day in week\"\r\n                                ng-click=\"selectDate(day.date)\"\r\n                                ng-class=\"{ 'selectable': day.selectable,\r\n                                            'disabled': day.disabled,\r\n                                            'not-this-month': day.notThisMonth,\r\n                                            'active': day.active }\">\r\n                                <p>{{day.dayOfMonth}}<p>\r\n                            </td>\r\n                        </tr>\r\n                    </table>\r\n                </td>\r\n                <td class=\"month-nav-container\" ng-click=\"nextMonth()\">\r\n                    <img src=\"images/right_arrow.png\" />\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n    </div>\r\n\r\n    <!-- <button ng-click=\"check()\">\r\n        Check Requested Date\r\n    </button> -->\r\n\r\n    <div class=\"fullscreen hidden\">\r\n    </div>\r\n\r\n</div>\r\n"
 
 /***/ }),
-/* 132 */,
-/* 133 */
+/* 132 */
 /***/ (function(module, exports) {
 
 module.exports = "\r\n<div id=\"time-picker\">\r\n\r\n    <div class=\"selector-container\">\r\n\r\n        <table class=\"selector\">\r\n            <tr>\r\n                <td class=\"icon-container\">\r\n                    <img class=\"icon\" src=\"images/clock.png\" />\r\n                </td>\r\n                <td class=\"selected-container\">\r\n                    <h3 class=\"selected-time unselected\">Select time</h3>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n        <table class=\"dialog hidden\">\r\n            <tr class=\"header\">\r\n                <td colspan=\"4\">\r\n                    <h2>\r\n                        {{formattedDate}}\r\n                    </h2>\r\n                </td>\r\n            </tr>\r\n            <tr class=\"subheader\">\r\n                <td colspan=\"2\"\r\n                    ng-class=\"{ 'active' : isAM }\" ng-click=\"showAM()\">\r\n                    <h4>AM</h4>\r\n                </td>\r\n                <td  colspan=\"2\"\r\n                     ng-class=\"{ 'active' : !isAM }\" ng-click=\"showPM()\">\r\n                    <h4>PM</h4>\r\n                </td>\r\n            </tr>\r\n            <tr class=\"hour\" ng-repeat=\"hour in hours\">\r\n                <td ng-repeat=\"quarter in hour\"\r\n                    ng-click=\"selectTime(quarter.time)\"\r\n                    ng-class=\"{ 'selectable': quarter.selectable,\r\n                                'active': quarter.active }\">\r\n                    <p>\r\n                        {{quarter.formattedTime}}\r\n                    </p>\r\n                </td>\r\n            </tr>\r\n        </table>\r\n\r\n    </div>\r\n\r\n    <div class=\"fullscreen hidden\">\r\n    </div>\r\n\r\n</div>\r\n"
 
 /***/ }),
-/* 134 */
+/* 133 */
 /***/ (function(module, exports) {
 
 var g;
@@ -76779,7 +76782,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 135 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(121);

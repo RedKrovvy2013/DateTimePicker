@@ -9,7 +9,7 @@ angular.module('app').directive('dateTimePicker', function() {
         restrict: 'E',
         transclude: true,
         require: ['ngModel', 'dateTimePicker'],
-        template: require('./dateTimePicker.html'),
+        template: '<div ng-transclude></div>',
         scope: {
             sbTimeZone: "<"
         },

@@ -3,6 +3,7 @@ body {
     background-color: #f6f6f6;
     font-family: 'Rockwell', sans-serif;
     padding: 10px;
+    overflow: hidden;
 }
 
 .hidden {
@@ -48,11 +49,6 @@ p {
     font-size: 21px;
 }
 
-img.icon {
-    width: 30px;
-    height 18px;
-}
-
 #date-picker, #time-picker {
     float: left;
     margin-right: 40px;
@@ -73,18 +69,22 @@ img.icon {
     padding: 10px;
 }
 
+img.icon {
+    width: 30px;
+    height 18px;
+}
+
 .selector td.icon-container {
-    width: 10%;
+    width: 40px;
     text-align: right;
 }
 
 .selector td.selected-container {
-    width: 90%;
     text-align: left;
 }
 
 .selector td.selected-container h3 {
-    padding-left: 10px;
+    padding-left: 5px;
 }
 
 .selector.active {
@@ -96,6 +96,7 @@ img.icon {
     top: 70px;
     border: 2px solid #acacac;
     background-color: #fff;
+    width: 525px;
 }
 
 .dialog h2,
@@ -113,17 +114,14 @@ img.icon {
  z-index: 2;
 }
 
-/*#date-picker .dialog {
-    left: 18px;
-}*/
-
 #date-picker td.month-nav-container {
     text-align: center;
-    width: 50px;
+    vertical-align: top;
+    width: 10%;
 }
 
 #date-picker td.month-nav-container img {
-    padding-top: 65px;
+    padding-top: 175px;
 }
 
 #date-picker tr.week td {
@@ -169,12 +167,8 @@ img.icon {
     background-color: #ee780c;
 }
 
-#time-picker .selector-container {
-    width: 190px;
-}
-
-#time-picker .dialog {
-    left: 560px;
+#time-picker .selector {
+    width: 200px;
 }
 
 #time-picker .subheader .active {
